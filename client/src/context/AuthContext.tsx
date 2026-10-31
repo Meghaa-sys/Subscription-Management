@@ -2,13 +2,13 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useS
 import { api, clearSession, hasSession, SESSION_EXPIRED_EVENT } from '../api/client';
 import { CurrentUser } from '../types';
 
-const CUSTOMER_NOT_SUPPORTED = 'This console is for staff and admins. The customer portal is not built yet.';
-
 interface AuthValue {
   user: CurrentUser | null;
   isAdmin: boolean;
   checkingSession: boolean;
   login: (email: string, password: string) => Promise<void>;
+  signup: (name: string, email: string, password: string) => Promise<void>;
+  setUser: (user: CurrentUser) => void;
   logout: () => void;
 }
 
@@ -27,10 +27,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!hasSession()) return;
     api
       .getMe()
-      .then(me => (me.role === 'customer' ? logout() : setUser(me)))
+      .then(setUser)
       .catch(console.error)
       .finally(() => setCheckingSession(false));
-  }, [logout]);
+  }, []);
 
   useEffect(() => {
     const handleExpired = () => setUser(null);
@@ -39,17 +39,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    const me = await api.login(email, password);
-    if (me.role === 'customer') {
-      clearSession();
-      throw new Error(CUSTOMER_NOT_SUPPORTED);
-    }
-    setUser(me);
+    setUser(await api.login(email, password));
+  }, []);
+
+  const signup = useCallback(async (name: string, email: string, password: string) => {
+    setUser(await api.signup(name, email, password));
   }, []);
 
   const value = useMemo(
-    () => ({ user, isAdmin: user?.role === 'admin', checkingSession, login, logout }),
-    [user, checkingSession, login, logout]
+    () => ({ user, isAdmin: user?.role === 'admin', checkingSession, login, signup, setUser, logout }),
+    [user, checkingSession, login, signup, logout]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

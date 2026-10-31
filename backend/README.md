@@ -29,8 +29,8 @@ npm run dev     # Django on :8000 and the React site on :5173
 
 Vite forwards `/api` to Django, so the site uses the database in `DATABASE_URL`. **Anything you
 change on the site changes Neon, which the whole team shares.** To try something risky, point
-`DATABASE_URL` at SQLite first. The site signs in with the seed logins below; customers cannot
-sign in yet, because the customer portal is not built.
+`DATABASE_URL` at SQLite first. The site signs in with the seed logins below: admin and staff
+land on the console, and customers land on their portal at `/portal`.
 
 - API: http://127.0.0.1:8000/api/
 - Swagger: http://127.0.0.1:8000/api/docs/ (log in, then click **Authorize** and paste the `access` token)

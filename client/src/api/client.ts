@@ -9,6 +9,8 @@ import type {
   Customer,
   DashboardStats,
   Discount,
+  DiscountRequest,
+  DiscountRequestStatus,
   Invoice,
   InvoiceStatus,
   NewSubscription,
@@ -17,7 +19,11 @@ import type {
   PaymentMethod,
   PaymentTerm,
   Plan,
+  PortalInvoice,
+  PortalOverview,
+  PortalSubscription,
   Product,
+  ProfileUpdate,
   Quotation,
   QuotationStatus,
   ReportsData,
@@ -399,6 +405,60 @@ const toPaymentTerm = (row: Row): PaymentTerm => ({
   dueDays: row.due_days,
 });
 
+function toDiscountRequest(row: Row): DiscountRequest {
+  return {
+    id: String(row.id),
+    customerName: row.customer_name,
+    subscriptionId: String(row.subscription),
+    subscriptionNumber: row.subscription_number,
+    message: row.message,
+    status: row.status,
+    discountName: row.discount_name,
+    createdAt: row.created_at,
+  };
+}
+
+function toPortalSubscription(row: Row): PortalSubscription {
+  const isRunning = row.status === 'active' || row.status === 'paused';
+  return {
+    ...toSubscription(row),
+    statusLabel: row.status_display,
+    expiryDate: row.expiry_date ?? null,
+    subtotal: toNumber(row.subtotal),
+    taxTotal: toNumber(row.tax_total),
+    salesperson: row.salesperson_name ?? null,
+    paymentTerm: row.payment_term_name ?? null,
+    canPause: row.status === 'active' && row.plan_pausable,
+    canResume: row.status === 'paused',
+    canRenew: isRunning && row.plan_renewable && Boolean(row.expiry_date),
+    lines: (row.lines ?? []).map((line: Row) => ({
+      id: String(line.id),
+      productName: line.product_name,
+      variantLabel: line.variant_label ?? null,
+      quantity: line.quantity,
+      unitPrice: toNumber(line.unit_price),
+      taxAmount: toNumber(line.tax_amount),
+      lineTotal: toNumber(line.line_total),
+    })),
+    discounts: (row.discounts ?? []).map((discount: Row) => discount.name),
+    history: (row.history ?? []).map((event: Row) => ({
+      id: String(event.id),
+      status: event.to_status_display,
+      note: event.note,
+      changedAt: event.changed_at,
+    })),
+  };
+}
+
+function toPortalInvoice(row: Row): PortalInvoice {
+  return {
+    ...toInvoice(row),
+    periodStart: row.period_start,
+    periodEnd: row.period_end,
+    payments: (row.payments ?? []).map(toPayment),
+  };
+}
+
 // --- Lifecycle sequencing ---------------------------------------------------
 
 const TRANSITION = (id: string) => `/subscriptions/${id}/transition/`;
@@ -472,24 +532,31 @@ const STATUS_COLORS: Record<string, string> = {
 const monthLabel = (month: string) =>
   new Date(`${month}-01T00:00:00`).toLocaleDateString(undefined, { month: 'short', year: '2-digit' });
 
+/** Log in or sign up: both answer with tokens and the user. */
+async function startSession(endpoint: string, payload: Row): Promise<CurrentUser> {
+  clearSession();
+  const res = await send(endpoint, { method: 'POST', body: JSON.stringify(payload) });
+  const body = await res.json().catch(() => null);
+  if (!res.ok) {
+    const message =
+      body?.detail ?? (res.status >= 500 ? 'The server could not be reached. Is the backend running?' : 'Login failed.');
+    throw new ApiError(message, res.status);
+  }
+  saveTokens(body.access, body.refresh);
+  return body.user;
+}
+
 export const api = {
   // Auth
-  async login(email: string, password: string): Promise<CurrentUser> {
-    clearSession();
-    const res = await send('/auth/login/', {
-      method: 'POST',
-      body: JSON.stringify({ email, password }),
-    });
-    const body = await res.json().catch(() => null);
-    if (!res.ok) {
-      const message =
-        body?.detail ?? (res.status >= 500 ? 'The server could not be reached. Is the backend running?' : 'Login failed.');
-      throw new ApiError(message, res.status);
-    }
-    saveTokens(body.access, body.refresh);
-    return body.user;
-  },
+  login: (email: string, password: string) => startSession('/auth/login/', { email, password }),
+  signup: (name: string, email: string, password: string) =>
+    startSession('/auth/signup/', { name, email, password }),
+  forgotPassword: (email: string) => post<{ detail: string }>('/auth/forgot-password/', { email }),
+  resetPassword: (token: string, newPassword: string) =>
+    post<{ detail: string }>('/auth/reset-password/', { token, new_password: newPassword }),
   getMe: () => request<CurrentUser>('/auth/me/'),
+  updateProfile: (data: ProfileUpdate) =>
+    request<CurrentUser>('/auth/me/', { method: 'PATCH', body: JSON.stringify(data) }),
 
   // Dashboard
   async getDashboardStats(timeFilter = '12 months'): Promise<DashboardStats> {
@@ -698,6 +765,16 @@ export const api = {
         applies_to: 'subscription',
       })
     ),
+  async getDiscountRequests(statuses: DiscountRequestStatus[]): Promise<DiscountRequest[]> {
+    const lists = await Promise.all(
+      statuses.map(status => all('/discount-requests/', { status }, toDiscountRequest))
+    );
+    return lists.flat().sort((a, b) => Number(b.id) - Number(a.id));
+  },
+  forwardDiscountRequest: (id: string) => post(`/discount-requests/${id}/forward/`),
+  rejectDiscountRequest: (id: string) => post(`/discount-requests/${id}/reject/`),
+  approveDiscountRequest: (id: string, discountId?: string) =>
+    post(`/discount-requests/${id}/approve/`, discountId ? { discount_id: Number(discountId) } : {}),
   getTaxes: () => all('/taxes/', {}, toTax),
   createTax: async (data: { name: string; rate: number; taxType: 'percent' | 'fixed' }) =>
     toTax(await post<Row>('/taxes/', { name: data.name, rate: data.rate.toFixed(2), tax_type: data.taxType })),
@@ -738,6 +815,37 @@ export const api = {
   // Billing
   runBillingCycle: () =>
     post<{ created: number; skipped: number; subscriptions_processed: number; failed: number }>('/billing/run/'),
+
+  // Customer portal. The API returns only the signed-in customer's rows; drafts
+  // are still being prepared by staff, so the portal leaves them out.
+  async getPortalSubscriptions(): Promise<Subscription[]> {
+    const rows = await all('/subscriptions/', {}, toSubscription);
+    return rows.filter(row => row.status !== 'draft');
+  },
+  async getPortalInvoices(): Promise<Invoice[]> {
+    const rows = await all('/invoices/', {}, toInvoice);
+    return rows.filter(row => row.status !== 'draft');
+  },
+  getPortalPayments: () => all('/payments/', {}, toPayment),
+  getMyDiscountRequests: () => all('/discount-requests/', {}, toDiscountRequest),
+  async getPortalOverview(): Promise<PortalOverview> {
+    const [subscriptions, invoices, payments, discountRequests] = await Promise.all([
+      api.getPortalSubscriptions(),
+      api.getPortalInvoices(),
+      api.getPortalPayments(),
+      api.getMyDiscountRequests(),
+    ]);
+    return { subscriptions, invoices, payments, discountRequests };
+  },
+  getPortalSubscription: async (id: string) => toPortalSubscription(await request<Row>(`/subscriptions/${id}/`)),
+  getPortalInvoice: async (id: string) => toPortalInvoice(await request<Row>(`/invoices/${id}/`)),
+  renewSubscription: (id: string) => post(`/subscriptions/${id}/renew/`, {}),
+  requestDiscount: (subscriptionId: string, message: string) =>
+    post('/discount-requests/', { subscription: Number(subscriptionId), message }),
+  async getCatalogue(): Promise<{ plans: Plan[]; products: Product[] }> {
+    const [plans, products] = await Promise.all([all('/plans/', {}, toPlan), all('/products/', {}, toProduct)]);
+    return { plans, products };
+  },
 
   /** The latest payments, for the notifications menu. */
   async getRecentActivity(): Promise<ActivityItem[]> {

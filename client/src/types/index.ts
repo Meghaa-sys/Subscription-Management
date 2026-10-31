@@ -182,6 +182,76 @@ export interface CurrentUser {
   name: string;
   email: string;
   role: 'admin' | 'staff' | 'customer';
+  phone?: string | null;
+  company?: string | null;
+  billing_address?: string | null;
+}
+
+export interface ProfileUpdate {
+  name: string;
+  phone: string;
+  company: string;
+  billing_address: string;
+}
+
+export type DiscountRequestStatus = 'pending' | 'forwarded' | 'approved' | 'rejected';
+
+export interface DiscountRequest {
+  id: string;
+  customerName: string;
+  subscriptionId: string;
+  subscriptionNumber: string;
+  message: string;
+  status: DiscountRequestStatus;
+  discountName: string | null;
+  createdAt: string;
+}
+
+// What a customer sees about their own account.
+
+export interface PortalSubscriptionLine {
+  id: string;
+  productName: string;
+  variantLabel: string | null;
+  quantity: number;
+  unitPrice: number;
+  taxAmount: number;
+  lineTotal: number;
+}
+
+export interface PortalSubscriptionEvent {
+  id: string;
+  status: string;
+  note: string;
+  changedAt: string;
+}
+
+export interface PortalSubscription extends Subscription {
+  statusLabel: string;
+  expiryDate: string | null;
+  subtotal: number;
+  taxTotal: number;
+  salesperson: string | null;
+  paymentTerm: string | null;
+  canPause: boolean;
+  canResume: boolean;
+  canRenew: boolean;
+  lines: PortalSubscriptionLine[];
+  discounts: string[];
+  history: PortalSubscriptionEvent[];
+}
+
+export interface PortalInvoice extends Invoice {
+  periodStart: string;
+  periodEnd: string;
+  payments: Payment[];
+}
+
+export interface PortalOverview {
+  subscriptions: Subscription[];
+  invoices: Invoice[];
+  payments: Payment[];
+  discountRequests: DiscountRequest[];
 }
 
 export interface ActivityItem {

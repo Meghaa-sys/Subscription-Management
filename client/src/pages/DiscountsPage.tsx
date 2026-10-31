@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Plus, X } from 'lucide-react';
 import { api } from '../api/client';
 import { Discount } from '../types';
+import { DiscountRequestsPanel } from '../components/DiscountRequestsPanel';
 import { StatusBadge } from '../components/StatusBadge';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -73,6 +74,8 @@ export const DiscountsPage: React.FC = () => {
           </button>
         )}
       </div>
+
+      <DiscountRequestsPanel discounts={discounts} />
 
       {/* Discounts Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

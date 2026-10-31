@@ -11,10 +11,10 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'md' })
   let bg = 'bg-slate-100 text-slate-700 border-slate-200';
   let dot = 'bg-slate-400';
 
-  if (['active', 'paid', 'successful', 'accepted'].includes(norm)) {
+  if (['active', 'paid', 'successful', 'accepted', 'approved'].includes(norm)) {
     bg = 'bg-emerald-50 text-emerald-700 border-emerald-200/60';
     dot = 'bg-emerald-500';
-  } else if (['pending', 'sent', 'trialing'].includes(norm)) {
+  } else if (['pending', 'sent', 'trialing', 'forwarded'].includes(norm)) {
     bg = 'bg-indigo-50 text-indigo-700 border-indigo-200/60';
     dot = 'bg-indigo-500';
   } else if (['paused', 'draft'].includes(norm)) {

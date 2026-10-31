@@ -106,19 +106,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {!collapsed ? (
             <NavLink to="/" className="flex-1 min-w-0 pr-2 flex items-center gap-2.5 p-1.5 -ml-1 rounded-xl">
               <div className="w-8 h-8 rounded-xl bg-primary flex items-center justify-center shrink-0 shadow-sm shadow-primary/30">
-                <span className="text-white font-bold text-sm tracking-tight">S</span>
+                <span className="text-white font-bold text-sm tracking-tight">B</span>
               </div>
               <div className="flex flex-col min-w-0">
                 <span className="font-semibold text-slate-900 text-sm tracking-tight leading-tight truncate">
-                  SubscriptIQ
+                  Brightloop
                 </span>
-                <span className="text-[10px] text-slate-400 font-medium mt-0.5 truncate">Brightloop Software</span>
+                <span className="text-[10px] text-slate-400 font-medium mt-0.5 truncate">Subscription Management</span>
               </div>
             </NavLink>
           ) : (
             <NavLink to="/" className="w-full flex justify-center">
               <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shrink-0 shadow-sm shadow-primary/30 hover:scale-105 transition-transform">
-                <span className="text-white font-bold text-base tracking-tight">S</span>
+                <span className="text-white font-bold text-base tracking-tight">B</span>
               </div>
             </NavLink>
           )}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Navigate, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Navigate, Routes, Route, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import { Sidebar } from './components/Sidebar';
@@ -21,6 +21,36 @@ import { TaxesPage } from './pages/TaxesPage';
 import { ReportsPage } from './pages/ReportsPage';
 import { UsersPage } from './pages/UsersPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { ResetPasswordPage } from './pages/ResetPasswordPage';
+
+// Customer portal
+import { PortalLayout } from './portal/PortalLayout';
+import { PortalDashboard } from './portal/PortalDashboard';
+import { PortalSubscriptions, PortalSubscriptionDetail } from './portal/PortalSubscriptions';
+import { PortalInvoices, PortalInvoiceDetail } from './portal/PortalInvoices';
+import { PortalPayments } from './portal/PortalPayments';
+import { PortalPlans } from './portal/PortalPlans';
+import { PortalDiscounts } from './portal/PortalDiscounts';
+import { PortalProfile } from './portal/PortalProfile';
+
+function CustomerPortal() {
+  return (
+    <Routes>
+      <Route path="/portal" element={<PortalLayout />}>
+        <Route index element={<PortalDashboard />} />
+        <Route path="subscriptions" element={<PortalSubscriptions />} />
+        <Route path="subscriptions/:id" element={<PortalSubscriptionDetail />} />
+        <Route path="invoices" element={<PortalInvoices />} />
+        <Route path="invoices/:id" element={<PortalInvoiceDetail />} />
+        <Route path="payments" element={<PortalPayments />} />
+        <Route path="plans" element={<PortalPlans />} />
+        <Route path="discounts" element={<PortalDiscounts />} />
+        <Route path="profile" element={<PortalProfile />} />
+      </Route>
+      <Route path="*" element={<Navigate to="/portal" replace />} />
+    </Routes>
+  );
+}
 
 function AppContent() {
   const { isAdmin } = useAuth();
@@ -75,6 +105,7 @@ function AppContent() {
             <Route path="/reports" element={<ReportsPage />} />
             <Route path="/users" element={isAdmin ? <UsersPage /> : <Navigate to="/" replace />} />
             <Route path="/settings" element={<SettingsPage />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>
       </div>
@@ -87,11 +118,14 @@ function AppContent() {
 
 function SessionGate() {
   const { user, checkingSession } = useAuth();
+  const { pathname } = useLocation();
 
+  if (pathname === '/reset-password') return <ResetPasswordPage />;
   if (checkingSession) {
     return <div className="min-h-screen bg-background" />;
   }
-  return user ? <AppContent /> : <LoginPage />;
+  if (!user) return <LoginPage />;
+  return user.role === 'customer' ? <CustomerPortal /> : <AppContent />;
 }
 
 export default function App() {
