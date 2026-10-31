@@ -70,3 +70,9 @@ wheels/
 backend/staticfiles/
 backend/media/
 
+# Agent & Skill metadata
+.agents/
+skills-lock.json
+
+# Local drafts
+drafts/
