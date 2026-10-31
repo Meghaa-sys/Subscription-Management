@@ -1,7 +1,7 @@
 {
-  "name": "subscriptiq-server",
+  "name": "brightloop-server",
   "version": "1.0.0",
-  "description": "Backend API for SubscriptIQ Subscription Management with PostgreSQL schema",
+  "description": "Backend API for Brightloop Software — Subscription Management & Recurring Billing Platform",
   "main": "src/server.js",
   "type": "module",
   "scripts": {

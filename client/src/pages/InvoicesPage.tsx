@@ -83,7 +83,7 @@ export const InvoicesPage: React.FC = () => {
         paymentMethod,
         amount: paymentInvoice.total,
       });
-      success('Payment Recorded', `Payment of $${paymentInvoice.total.toFixed(2)} applied to ${paymentInvoice.invoiceNumber}.`);
+      success('Payment Recorded', `Payment of ₹${paymentInvoice.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })} applied to ${paymentInvoice.invoiceNumber}.`);
       setPaymentInvoice(null);
       if (selectedInvoice && selectedInvoice.id === paymentInvoice.id) {
         handleViewInvoice(paymentInvoice.id);
@@ -190,7 +190,7 @@ export const InvoicesPage: React.FC = () => {
                     <td className="py-3.5 px-6 text-xs text-slate-500">{inv.issueDate}</td>
                     <td className="py-3.5 px-6 text-xs text-slate-500">{inv.dueDate}</td>
                     <td className="py-3.5 px-6 font-mono font-bold text-slate-900">
-                      ${inv.total.toFixed(2)}
+                      ₹{inv.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                     </td>
                     <td className="py-3.5 px-6">
                       <StatusBadge status={inv.status} size="sm" />
@@ -269,17 +269,20 @@ export const InvoicesPage: React.FC = () => {
                 <div>
                   <div className="flex items-center gap-2.5">
                     <div className="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center font-bold text-sm">
-                      S
+                      B
                     </div>
                     <span className="text-xl font-bold tracking-tight text-slate-900">
-                      {selectedInvoice.companySettings?.companyName || 'Brightloop Software'}
+                      {selectedInvoice.companySettings?.companyName || 'Brightloop Software Pvt. Ltd.'}
                     </span>
                   </div>
                   <p className="text-xs text-slate-400 mt-1">
-                    {selectedInvoice.companySettings?.address || '548 Market St, San Francisco, CA'}
+                    {selectedInvoice.companySettings?.address || 'Tower B, 7th Floor, Embassy TechVillage, Outer Ring Road, Bengaluru, Karnataka 560103'}
                   </p>
                   <p className="text-xs text-slate-400">
-                    Tax ID: {selectedInvoice.companySettings?.taxId || 'US-892401928'}
+                    GSTIN: {selectedInvoice.companySettings?.taxId || '29AABCB8924F1Z5'}
+                  </p>
+                  <p className="text-xs text-slate-400">
+                    CIN: U72200KA2022PTC162884 · support@brightloop.in
                   </p>
                 </div>
 
@@ -329,10 +332,10 @@ export const InvoicesPage: React.FC = () => {
                         <td className="py-2.5 px-4 font-medium text-slate-800">{item.description}</td>
                         <td className="py-2.5 px-4 text-center text-slate-500">{item.quantity}</td>
                         <td className="py-2.5 px-4 text-right font-mono text-slate-600">
-                          ${item.unitPrice.toFixed(2)}
+                          ₹{item.unitPrice.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                         </td>
                         <td className="py-2.5 px-4 text-right font-mono font-medium text-slate-900">
-                          ${item.amount.toFixed(2)}
+                          ₹{item.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                         </td>
                       </tr>
                     ))}
@@ -345,21 +348,21 @@ export const InvoicesPage: React.FC = () => {
                 <div className="w-64 space-y-2">
                   <div className="flex justify-between text-slate-500">
                     <span>Subtotal</span>
-                    <span className="font-mono">${selectedInvoice.subtotal.toFixed(2)}</span>
+                    <span className="font-mono">₹{selectedInvoice.subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                   </div>
                   {selectedInvoice.discountAmount > 0 && (
                     <div className="flex justify-between text-emerald-600 font-medium">
                       <span>Discount</span>
-                      <span className="font-mono">-${selectedInvoice.discountAmount.toFixed(2)}</span>
+                      <span className="font-mono">-₹{selectedInvoice.discountAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                     </div>
                   )}
                   <div className="flex justify-between text-slate-500">
-                    <span>Tax (8.25%)</span>
-                    <span className="font-mono">${selectedInvoice.taxAmount.toFixed(2)}</span>
+                    <span>GST (18%)</span>
+                    <span className="font-mono">₹{selectedInvoice.taxAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                   </div>
                   <div className="flex justify-between text-sm font-bold text-slate-900 border-t border-slate-200 pt-2">
                     <span>Total Amount</span>
-                    <span className="font-mono">${selectedInvoice.total.toFixed(2)}</span>
+                    <span className="font-mono">₹{selectedInvoice.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                   </div>
                 </div>
               </div>
@@ -407,7 +410,7 @@ export const InvoicesPage: React.FC = () => {
                 <div className="flex justify-between text-slate-500">
                   <span>Balance Due</span>
                   <span className="font-bold text-slate-900 font-mono">
-                    ${paymentInvoice.total.toFixed(2)}
+                    ₹{paymentInvoice.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                   </span>
                 </div>
               </div>
@@ -421,9 +424,10 @@ export const InvoicesPage: React.FC = () => {
                   onChange={e => setPaymentMethod(e.target.value)}
                   className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden"
                 >
-                  <option value="credit_card">Credit Card (Stripe Gateway)</option>
-                  <option value="bank_transfer">ACH Direct Debit</option>
-                  <option value="wire">Wire Transfer</option>
+                  <option value="upi">UPI AutoPay / e-Mandate (NPCI)</option>
+                  <option value="bank_transfer">HDFC Corporate NetBanking (NEFT/RTGS)</option>
+                  <option value="credit_card">Corporate RuPay / Visa Credit Card</option>
+                  <option value="wire">Corporate RTGS Wire</option>
                 </select>
               </div>
 

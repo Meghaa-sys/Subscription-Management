@@ -132,8 +132,12 @@ export const api = {
   createTax: (data: Partial<Tax>) =>
     fetchJSON<Tax>('/taxes', { method: 'POST', body: JSON.stringify(data) }),
 
-  // Reports
+  // Reports & Analytics
   getReports: () => fetchJSON<any>('/reports'),
+
+  // Sales & Revenue Calendar
+  getSalesCalendar: (year = 2026, month = 10) =>
+    fetchJSON<any>(`/sales-calendar?year=${year}&month=${month}`),
 
   // Users & Settings
   getUsers: () => fetchJSON<User[]>('/users'),

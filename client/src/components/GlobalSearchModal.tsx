@@ -81,7 +81,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
             type="text"
             value={query}
             onChange={e => setQuery(e.target.value)}
-            placeholder="Search customers, subscriptions, invoices (e.g. Acme, INV-2026, Active)..."
+            placeholder="Search Indian enterprises, subscriptions, GST invoices (e.g. TCS, Reliance, INV-2026-IN)..."
             className="w-full text-sm font-normal text-slate-900 placeholder:text-slate-400 focus:outline-hidden bg-transparent"
           />
           {loading && <Loader2 className="w-4 h-4 text-indigo-500 animate-spin shrink-0" />}
@@ -104,9 +104,9 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
             <div className="py-8 text-center">
               <p className="text-sm text-slate-500">Quickly find customers, billing records, or invoices</p>
               <div className="flex items-center justify-center gap-2 mt-3">
-                <span className="text-xs px-2.5 py-1 bg-slate-100 text-slate-600 rounded-lg">Try "Acme"</span>
-                <span className="text-xs px-2.5 py-1 bg-slate-100 text-slate-600 rounded-lg">Try "INV-2026"</span>
-                <span className="text-xs px-2.5 py-1 bg-slate-100 text-slate-600 rounded-lg">Try "Enterprise"</span>
+                <span className="text-xs px-2.5 py-1 bg-slate-100 text-slate-600 rounded-lg">Try "TCS"</span>
+                <span className="text-xs px-2.5 py-1 bg-slate-100 text-slate-600 rounded-lg">Try "Reliance Jio"</span>
+                <span className="text-xs px-2.5 py-1 bg-slate-100 text-slate-600 rounded-lg">Try "INV-2026-IN"</span>
               </div>
             </div>
           ) : totalResults === 0 && !loading ? (
@@ -184,7 +184,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
-                          <span className="text-sm font-semibold text-slate-900">${inv.total.toFixed(2)}</span>
+                          <span className="text-sm font-semibold text-slate-900">₹{inv.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                           <StatusBadge status={inv.status} size="sm" />
                           <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-primary transition-colors" />
                         </div>
@@ -216,7 +216,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
                             Subscription #{sub.id}
                           </p>
                           <p className="text-xs text-slate-400">
-                            ${sub.amount}/{sub.billingCycle} • Renews {sub.nextRenewal}
+                            ₹{sub.amount.toLocaleString('en-IN')}/{sub.billingCycle} • Renews {sub.nextRenewal}
                           </p>
                         </div>
                         <div className="flex items-center gap-2">

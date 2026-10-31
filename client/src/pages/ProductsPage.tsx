@@ -129,7 +129,7 @@ export const ProductsPage: React.FC = () => {
       {/* Add Product Modal */}
       {isAddModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in">
-          <div className="w-full max-w-lg bg-white rounded-2xl shadow-modal border border-slate-200 p-6 space-y-4">
+          <div className="w-full max-w-xl bg-white rounded-2xl shadow-modal border border-slate-200 p-6 space-y-4 max-h-[90vh] overflow-y-auto">
             <h3 className="text-base font-semibold text-slate-900">Create New Product</h3>
             <form onSubmit={handleCreateProduct} className="space-y-4">
               <div>
@@ -144,6 +144,27 @@ export const ProductsPage: React.FC = () => {
                 />
               </div>
 
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 mb-1">Sales Price (₹)</label>
+                  <input
+                    type="number"
+                    min={0}
+                    placeholder="e.g. 49999"
+                    className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 mb-1">Cost Price (₹)</label>
+                  <input
+                    type="number"
+                    min={0}
+                    placeholder="e.g. 12000"
+                    className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden"
+                  />
+                </div>
+              </div>
+
               <div>
                 <label className="block text-xs font-medium text-slate-700 mb-1">Category</label>
                 <select
@@ -155,6 +176,7 @@ export const ProductsPage: React.FC = () => {
                   <option value="Analytics">Analytics</option>
                   <option value="Security">Security</option>
                   <option value="Compliance">Compliance</option>
+                  <option value="Add-On">Add-On</option>
                 </select>
               </div>
 
@@ -167,6 +189,37 @@ export const ProductsPage: React.FC = () => {
                   placeholder="Summary of product purpose and value proposition"
                   className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden focus:bg-white focus:border-primary"
                 />
+              </div>
+
+              {/* Product Variants */}
+              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 space-y-2">
+                <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Product Variants (Brand / Add-On Tiers)</p>
+                <p className="text-[11px] text-slate-400">Each variant adds a price premium on top of the base sales price.</p>
+                {[
+                  { label: 'Odoo Brand', addedPrice: 56000 },
+                  { label: 'SAP Brand', addedPrice: 85000 },
+                  { label: 'Salesforce Add-On', addedPrice: 120000 },
+                ].map(v => (
+                  <label key={v.label} className="flex items-center justify-between cursor-pointer group">
+                    <span className="flex items-center gap-2 text-xs text-slate-700">
+                      <input type="checkbox" className="w-4 h-4 rounded accent-primary" />
+                      {v.label}
+                    </span>
+                    <span className="text-xs font-semibold text-primary font-mono">+₹{v.addedPrice.toLocaleString('en-IN')}</span>
+                  </label>
+                ))}
+                <div className="flex gap-2 mt-1">
+                  <input
+                    type="text"
+                    placeholder="Custom variant name"
+                    className="flex-1 px-2.5 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:outline-hidden"
+                  />
+                  <input
+                    type="number"
+                    placeholder="+₹"
+                    className="w-24 px-2.5 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:outline-hidden"
+                  />
+                </div>
               </div>
 
               <div>

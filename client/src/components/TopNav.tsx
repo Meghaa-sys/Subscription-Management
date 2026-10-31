@@ -214,9 +214,9 @@ export const TopNav: React.FC<TopNavProps> = ({
             <div className="absolute right-0 mt-2 w-60 bg-white rounded-2xl shadow-dropdown border border-slate-200 p-1.5 z-40 animate-in fade-in zoom-in-95">
               <div className="px-3 py-2 border-b border-slate-100 mb-1">
                 <p className="text-xs font-semibold text-slate-900">Megha</p>
-                <p className="text-[11px] text-slate-500 truncate">megha@brightloop.io</p>
+                <p className="text-[11px] text-slate-500 truncate">megha@brightloop.in</p>
                 <div className="mt-1.5 inline-flex items-center gap-1.5 text-[10px] font-medium bg-lavender-100 text-primary px-2 py-0.5 rounded-md">
-                  <Building className="w-3 h-3" /> Brightloop Software
+                  <Building className="w-3 h-3" /> Brightloop Technologies India
                 </div>
               </div>
 

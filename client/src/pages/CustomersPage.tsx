@@ -241,7 +241,7 @@ export const CustomersPage: React.FC = () => {
                       <StatusBadge status={cust.status} size="sm" />
                     </td>
                     <td className="py-3.5 px-6 font-mono font-semibold text-slate-900">
-                      ${cust.totalSpent.toLocaleString()}
+                      ₹{cust.totalSpent.toLocaleString('en-IN')}
                     </td>
                     <td className="py-3.5 px-6 text-xs text-slate-500">
                       {new Date(cust.createdAt).toLocaleDateString()}
@@ -340,7 +340,7 @@ export const CustomersPage: React.FC = () => {
                   <div className="p-4 rounded-xl bg-slate-50 border border-slate-100">
                     <span className="text-xs font-medium text-slate-400">Outstanding Balance</span>
                     <p className="text-2xl font-bold font-mono text-slate-900 mt-1">
-                      ${selectedCustomerDetails.balance.toLocaleString()}
+                      ₹{selectedCustomerDetails.balance.toLocaleString('en-IN')}
                     </p>
                   </div>
                 </div>
@@ -367,7 +367,7 @@ export const CustomersPage: React.FC = () => {
                               #{sub.id}
                             </p>
                             <p className="text-xs text-slate-400">
-                              ${sub.amount}/{sub.billingCycle} • Renews {sub.nextRenewal}
+                              ₹{sub.amount.toLocaleString('en-IN')}/{sub.billingCycle} • Renews {sub.nextRenewal}
                             </p>
                           </div>
                           <StatusBadge status={sub.status} size="sm" />
@@ -404,7 +404,7 @@ export const CustomersPage: React.FC = () => {
                           </div>
                           <div className="text-right">
                             <p className="text-sm font-bold font-mono text-slate-900">
-                              ${inv.total.toFixed(2)}
+                              ₹{inv.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                             </p>
                             <StatusBadge status={inv.status} size="sm" />
                           </div>
@@ -446,7 +446,7 @@ export const CustomersPage: React.FC = () => {
                   required
                   value={formData.name}
                   onChange={e => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="e.g. Acme Corporation"
+                  placeholder="e.g. Tata Consultancy Services (TCS)"
                   className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden focus:bg-white focus:border-primary"
                 />
               </div>
@@ -460,7 +460,7 @@ export const CustomersPage: React.FC = () => {
                   required
                   value={formData.email}
                   onChange={e => setFormData({ ...formData, email: e.target.value })}
-                  placeholder="billing@acme.corp"
+                  placeholder="billing@tcs.com"
                   className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden focus:bg-white focus:border-primary"
                 />
               </div>
@@ -474,7 +474,7 @@ export const CustomersPage: React.FC = () => {
                     type="text"
                     value={formData.company}
                     onChange={e => setFormData({ ...formData, company: e.target.value })}
-                    placeholder="Acme Global Inc."
+                    placeholder="Tata Consultancy Services Ltd."
                     className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden focus:bg-white focus:border-primary"
                   />
                 </div>
@@ -486,7 +486,7 @@ export const CustomersPage: React.FC = () => {
                     type="text"
                     value={formData.phone}
                     onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                    placeholder="+1 (555) 000-0000"
+                    placeholder="+91 22 6778 9999"
                     className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden focus:bg-white focus:border-primary"
                   />
                 </div>
@@ -494,13 +494,13 @@ export const CustomersPage: React.FC = () => {
 
               <div>
                 <label className="block text-xs font-medium text-slate-700 mb-1">
-                  Billing Address
+                  Billing Address & GSTIN
                 </label>
                 <input
                   type="text"
                   value={formData.address}
                   onChange={e => setFormData({ ...formData, address: e.target.value })}
-                  placeholder="100 Innovation Way, Austin, TX"
+                  placeholder="TCS House, Fort, Mumbai, MH (GSTIN: 27AAACT2727Q1ZW)"
                   className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden focus:bg-white focus:border-primary"
                 />
               </div>

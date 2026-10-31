@@ -1,15 +1,15 @@
 {
   "settings": {
-    "companyName": "Brightloop Software",
-    "legalName": "Brightloop Technologies Inc.",
-    "supportEmail": "billing@brightloop.io",
-    "contactPhone": "+1 (555) 382-9011",
-    "currency": "USD",
-    "currencySymbol": "$",
-    "timezone": "America/New_York (UTC-5)",
-    "taxId": "US-892401928",
-    "address": "548 Market St, Suite 32900, San Francisco, CA 94104",
-    "invoicePrefix": "INV-2026-",
+    "companyName": "Brightloop Technologies India Pvt. Ltd.",
+    "legalName": "Brightloop Software India Private Limited",
+    "supportEmail": "billing@brightloop.in",
+    "contactPhone": "+91 (080) 4920-8800",
+    "currency": "INR",
+    "currencySymbol": "₹",
+    "timezone": "Asia/Kolkata (IST, UTC+5:30)",
+    "taxId": "GSTIN: 29AABCB8924F1Z5",
+    "address": "Tower B, 7th Floor, Embassy TechVillage, Outer Ring Road, Devarabeesanahalli, Bengaluru, Karnataka 560103",
+    "invoicePrefix": "INV-2026-IN-",
     "paymentTermsDays": 14,
     "gracePeriodDays": 7,
     "autoRenewDefault": true
@@ -18,7 +18,7 @@
     {
       "id": "usr_01",
       "name": "Megha",
-      "email": "megha@brightloop.io",
+      "email": "megha@brightloop.in",
       "role": "Administrator",
       "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80",
       "status": "active",
@@ -27,108 +27,108 @@
     },
     {
       "id": "usr_02",
-      "name": "David Chen",
-      "email": "david.chen@brightloop.io",
+      "name": "Arjun Deshmukh",
+      "email": "arjun.d@brightloop.in",
       "role": "Finance Staff",
       "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&auto=format&fit=crop&q=80",
       "status": "active",
-      "department": "Accounting & Treasury",
+      "department": "Taxation & Treasury (India)",
       "lastLogin": "2026-10-30 04:20 PM"
     },
     {
       "id": "usr_03",
-      "name": "Sarah Jenkins",
-      "email": "sarah.j@brightloop.io",
+      "name": "Priya Sharma",
+      "email": "priya.s@brightloop.in",
       "role": "Support Staff",
       "avatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=120&auto=format&fit=crop&q=80",
       "status": "active",
-      "department": "Customer Success",
+      "department": "Enterprise Customer Success",
       "lastLogin": "2026-10-31 08:12 AM"
     }
   ],
   "customers": [
     {
       "id": "cust_01",
-      "name": "Acme Corporation",
-      "contactName": "Elena Rostova",
-      "email": "elena@acme.corp",
-      "phone": "+1 (415) 890-2133",
-      "company": "Acme Global Holdings",
+      "name": "Tata Consultancy Services (TCS)",
+      "contactName": "Krithika Iyer",
+      "email": "krithika.iyer@tcs.com",
+      "phone": "+91 22 6778 9999",
+      "company": "Tata Consultancy Services Ltd.",
       "status": "active",
       "balance": 0,
-      "totalSpent": 4890,
+      "totalSpent": 1845000,
       "avatar": "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=100&auto=format&fit=crop&q=80",
-      "address": "100 Innovation Way, Suite 400, Austin, TX 78701",
+      "address": "TCS House, Raveline Street, Fort, Mumbai, Maharashtra 400001 (GSTIN: 27AAACT2727Q1ZW)",
       "createdAt": "2026-01-15T09:00:00Z"
     },
     {
       "id": "cust_02",
-      "name": "Nexus Dynamics",
-      "contactName": "Marcus Vance",
-      "email": "marcus@nexusdynamics.io",
-      "phone": "+1 (650) 441-9920",
-      "company": "Nexus Dynamics AI",
+      "name": "Reliance Jio Platforms",
+      "contactName": "Rohan Deshmukh",
+      "email": "rohan.deshmukh@ril.com",
+      "phone": "+91 22 4477 1234",
+      "company": "Jio Platforms Limited",
       "status": "active",
-      "balance": 1450,
-      "totalSpent": 12400,
+      "balance": 124500,
+      "totalSpent": 4280000,
       "avatar": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&auto=format&fit=crop&q=80",
-      "address": "77 Geary Street, San Francisco, CA 94108",
+      "address": "Reliance Corporate Park, Thane-Belapur Road, Ghansoli, Navi Mumbai, Maharashtra 400701 (GSTIN: 27AABCR0414L1Z2)",
       "createdAt": "2026-02-01T14:30:00Z"
     },
     {
       "id": "cust_03",
-      "name": "PulseFlow Media",
-      "contactName": "Chloe Bennett",
-      "email": "cbennett@pulseflow.co",
-      "phone": "+1 (212) 304-5829",
-      "company": "PulseFlow Digital",
+      "name": "Infosys Limited",
+      "contactName": "Priya Narayanan",
+      "email": "priya.narayanan@infosys.com",
+      "phone": "+91 80 2852 0261",
+      "company": "Infosys Limited",
       "status": "active",
       "balance": 0,
-      "totalSpent": 8750,
+      "totalSpent": 2850000,
       "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80",
-      "address": "350 5th Avenue, Fl 42, New York, NY 10118",
+      "address": "Electronics City, Hosur Road, Bengaluru, Karnataka 560100 (GSTIN: 29AAACI4322M1Z0)",
       "createdAt": "2026-02-20T11:15:00Z"
     },
     {
       "id": "cust_04",
-      "name": "CloudSync Labs",
-      "contactName": "Devon Patel",
-      "email": "devon@cloudsynclabs.net",
-      "phone": "+1 (206) 779-1120",
-      "company": "CloudSync Systems",
+      "name": "Flipkart Internet",
+      "contactName": "Ananya Sengupta",
+      "email": "ananya.s@flipkart.com",
+      "phone": "+91 80 4358 1200",
+      "company": "Flipkart Internet Private Limited",
       "status": "active",
-      "balance": 3500,
-      "totalSpent": 6200,
+      "balance": 35000,
+      "totalSpent": 1520000,
       "avatar": "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=100&auto=format&fit=crop&q=80",
-      "address": "1201 3rd Ave, Seattle, WA 98101",
+      "address": "Embassy TechVillage, Outer Ring Road, Bengaluru, Karnataka 560103 (GSTIN: 29AAACF4213F1ZQ)",
       "createdAt": "2026-03-10T08:45:00Z"
     },
     {
       "id": "cust_05",
-      "name": "Hyperion Robotics",
-      "contactName": "Astrid Lindgren",
-      "email": "astrid@hyperion.tech",
-      "phone": "+46 8 123 4567",
-      "company": "Hyperion Robotics AB",
+      "name": "HDFC Bank Limited",
+      "contactName": "Vikram Malhotra",
+      "email": "vikram.malhotra@hdfcbank.com",
+      "phone": "+91 22 6631 6000",
+      "company": "HDFC Bank Limited",
       "status": "active",
       "balance": 0,
-      "totalSpent": 19800,
+      "totalSpent": 3480000,
       "avatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&auto=format&fit=crop&q=80",
-      "address": "Kungsgatan 12, Stockholm, Sweden",
+      "address": "HDFC Bank House, Senapati Bapat Marg, Lower Parel, Mumbai, Maharashtra 400013 (GSTIN: 27AAACH2702H1Z1)",
       "createdAt": "2025-11-04T10:00:00Z"
     },
     {
       "id": "cust_06",
-      "name": "Zephyr Analytics",
-      "contactName": "Liam O'Connor",
-      "email": "liam@zephyranalytics.com",
-      "phone": "+1 (312) 991-0344",
-      "company": "Zephyr BigData LLC",
+      "name": "Zomato Limited",
+      "contactName": "Tanmay Bhatia",
+      "email": "tanmay.bhatia@zomato.com",
+      "phone": "+91 124 415 6700",
+      "company": "Zomato Limited",
       "status": "inactive",
       "balance": 0,
-      "totalSpent": 3100,
+      "totalSpent": 890000,
       "avatar": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=100&auto=format&fit=crop&q=80",
-      "address": "233 S Wacker Dr, Chicago, IL 60606",
+      "address": "Ground Floor, Tower C, Pioneer Urban Square, Sector 62, Gurugram, Haryana 122098 (GSTIN: 06AAACZ1234K1Z8)",
       "createdAt": "2026-01-28T16:20:00Z"
     }
   ],
@@ -136,21 +136,21 @@
     {
       "id": "prod_01",
       "name": "Brightloop Engine",
-      "description": "Core real-time edge processing and high-availability sync engine.",
+      "description": "Core real-time edge processing and high-availability sync engine hosted across AWS Mumbai & Hyderabad regions.",
       "category": "Infrastructure",
       "status": "active",
       "icon": "Cpu",
       "features": [
-        "Sub-10ms Global Latency",
+        "Sub-10ms Pan-India Latency",
         "Unlimited Event Ingestion",
         "99.99% Guaranteed SLA",
-        "Custom Domain Routing"
+        "Local Data Residency (RBI Compliant)"
       ]
     },
     {
       "id": "prod_02",
       "name": "Brightloop Analytics",
-      "description": "Deep customer behavioral telemetry, cohort analytics, and AI predictions.",
+      "description": "Deep customer behavioral telemetry, cohort analytics, and AI predictions designed for high-scale Indian consumer apps.",
       "category": "Analytics",
       "status": "active",
       "icon": "BarChart3",
@@ -164,15 +164,15 @@
     {
       "id": "prod_03",
       "name": "Enterprise Shield",
-      "description": "Zero-trust network security, automated SOC2 compliance, and dedicated encryption keys.",
+      "description": "Zero-trust network security, automated SOC-2, ISO 27001, and RBI cloud security framework compliance.",
       "category": "Security",
       "status": "active",
       "icon": "ShieldCheck",
       "features": [
-        "SAML / Okta SSO Integration",
+        "SAML / Okta / Azure AD SSO",
         "Granular Role-Based Access (RBAC)",
         "Immutable Audit Logging",
-        "Dedicated Private VPC Peering"
+        "Dedicated Private VPC Peering in India"
       ]
     }
   ],
@@ -182,8 +182,8 @@
       "productId": "prod_01",
       "name": "Starter - Monthly",
       "billingInterval": "monthly",
-      "price": 99,
-      "currency": "USD",
+      "price": 7999,
+      "currency": "INR",
       "seatBased": false,
       "pricePerSeat": 0,
       "activeSubscribers": 42,
@@ -198,16 +198,16 @@
       "productId": "prod_01",
       "name": "Growth - Monthly",
       "billingInterval": "monthly",
-      "price": 299,
-      "currency": "USD",
+      "price": 24999,
+      "currency": "INR",
       "seatBased": true,
-      "pricePerSeat": 25,
+      "pricePerSeat": 1999,
       "activeSubscribers": 128,
       "features": [
         "Up to 500,000 monthly active users",
         "10 seats included",
         "Priority SLA support (<2hr)",
-        "Custom webhooks & integrations"
+        "UPI Autopay & Razorpay webhooks"
       ]
     },
     {
@@ -215,16 +215,16 @@
       "productId": "prod_01",
       "name": "Growth - Annual",
       "billingInterval": "annual",
-      "price": 2990,
-      "currency": "USD",
+      "price": 249990,
+      "currency": "INR",
       "seatBased": true,
-      "pricePerSeat": 240,
+      "pricePerSeat": 19990,
       "activeSubscribers": 84,
       "features": [
         "2 months free included",
         "Up to 500,000 monthly active users",
         "Priority SLA support",
-        "Dedicated onboarding engineer"
+        "Dedicated onboarding engineer in Bengaluru"
       ]
     },
     {
@@ -232,14 +232,14 @@
       "productId": "prod_01",
       "name": "Enterprise Scale - Monthly",
       "billingInterval": "monthly",
-      "price": 899,
-      "currency": "USD",
+      "price": 74999,
+      "currency": "INR",
       "seatBased": true,
-      "pricePerSeat": 45,
+      "pricePerSeat": 3499,
       "activeSubscribers": 36,
       "features": [
         "Unlimited monthly active users",
-        "Dedicated cluster deployment",
+        "Dedicated cluster deployment in Mumbai",
         "24/7 dedicated Slack war-room",
         "Custom compliance attestations"
       ]
@@ -249,14 +249,14 @@
       "productId": "prod_02",
       "name": "Analytics Pro - Monthly",
       "billingInterval": "monthly",
-      "price": 149,
-      "currency": "USD",
+      "price": 12499,
+      "currency": "INR",
       "seatBased": false,
       "pricePerSeat": 0,
       "activeSubscribers": 65,
       "features": [
         "Full telemetry pipeline",
-        "Up to 10M events/month",
+        "Up to 50M events/month",
         "Machine Learning Churn Predictor"
       ]
     },
@@ -265,46 +265,28 @@
       "productId": "prod_03",
       "name": "Shield Security - Monthly",
       "billingInterval": "monthly",
-      "price": 399,
-      "currency": "USD",
+      "price": 29999,
+      "currency": "INR",
       "seatBased": false,
       "pricePerSeat": 0,
       "activeSubscribers": 28,
       "features": [
         "Dedicated KMS key",
         "SAML 2.0 / SCIM auto-provisioning",
-        "Real-time audit log streaming"
+        "Real-time audit log streaming to SIEM"
       ]
     }
   ],
   "subscriptions": [
-    {
-      "id": "sub_mvvyfrvp",
-      "customerId": "cust_01",
-      "planId": "plan_shield_addon",
-      "quotationId": "qt_002",
-      "quantity": 1,
-      "billingCycle": "monthly",
-      "unitPrice": 399,
-      "seatsAmount": 0,
-      "amount": 431.92,
-      "status": "active",
-      "startDate": "2026-10-31T05:22:36.901Z",
-      "currentPeriodStart": "2026-10-31T05:22:36.901Z",
-      "currentPeriodEnd": "2026-11-30T05:22:36.901Z",
-      "nextRenewal": "2026-11-30",
-      "autoRenew": true,
-      "daysRemaining": 30
-    },
     {
       "id": "sub_001",
       "customerId": "cust_01",
       "planId": "plan_growth_mo",
       "quantity": 12,
       "billingCycle": "monthly",
-      "unitPrice": 299,
-      "seatsAmount": 50,
-      "amount": 349,
+      "unitPrice": 24999,
+      "seatsAmount": 3998,
+      "amount": 28997,
       "status": "active",
       "startDate": "2026-01-15T00:00:00Z",
       "currentPeriodStart": "2026-10-15T00:00:00Z",
@@ -319,9 +301,9 @@
       "planId": "plan_enterprise_mo",
       "quantity": 25,
       "billingCycle": "monthly",
-      "unitPrice": 899,
-      "seatsAmount": 675,
-      "amount": 1574,
+      "unitPrice": 74999,
+      "seatsAmount": 52485,
+      "amount": 127484,
       "status": "active",
       "startDate": "2026-02-01T00:00:00Z",
       "currentPeriodStart": "2026-10-01T00:00:00Z",
@@ -336,9 +318,9 @@
       "planId": "plan_growth_yr",
       "quantity": 10,
       "billingCycle": "annual",
-      "unitPrice": 2990,
+      "unitPrice": 249990,
       "seatsAmount": 0,
-      "amount": 2990,
+      "amount": 249990,
       "status": "active",
       "startDate": "2026-02-20T00:00:00Z",
       "currentPeriodStart": "2026-02-20T00:00:00Z",
@@ -353,9 +335,9 @@
       "planId": "plan_starter_mo",
       "quantity": 1,
       "billingCycle": "monthly",
-      "unitPrice": 99,
+      "unitPrice": 7999,
       "seatsAmount": 0,
-      "amount": 99,
+      "amount": 7999,
       "status": "past_due",
       "startDate": "2026-03-10T00:00:00Z",
       "currentPeriodStart": "2026-09-10T00:00:00Z",
@@ -370,9 +352,9 @@
       "planId": "plan_enterprise_mo",
       "quantity": 40,
       "billingCycle": "monthly",
-      "unitPrice": 899,
-      "seatsAmount": 1350,
-      "amount": 2249,
+      "unitPrice": 74999,
+      "seatsAmount": 104970,
+      "amount": 179969,
       "status": "active",
       "startDate": "2025-11-04T00:00:00Z",
       "currentPeriodStart": "2026-10-04T00:00:00Z",
@@ -387,9 +369,9 @@
       "planId": "plan_starter_mo",
       "quantity": 1,
       "billingCycle": "monthly",
-      "unitPrice": 99,
+      "unitPrice": 7999,
       "seatsAmount": 0,
-      "amount": 99,
+      "amount": 7999,
       "status": "paused",
       "startDate": "2026-01-28T00:00:00Z",
       "currentPeriodStart": "2026-08-28T00:00:00Z",
@@ -402,31 +384,8 @@
   ],
   "invoices": [
     {
-      "id": "inv_mvvyfrvp",
-      "invoiceNumber": "INV-2026-011",
-      "customerId": "cust_01",
-      "subscriptionId": "sub_mvvyfrvp",
-      "issueDate": "2026-10-31",
-      "dueDate": "2026-11-14",
-      "status": "pending",
-      "lineItems": [
-        {
-          "description": "Enterprise Shield Security Upgrade",
-          "quantity": 1,
-          "unitPrice": 399,
-          "amount": 399
-        }
-      ],
-      "subtotal": 399,
-      "discountAmount": 0,
-      "taxAmount": 32.92,
-      "total": 431.92,
-      "paidAt": null,
-      "notes": "Generated automatically upon acceptance of Quotation QUO-2026-043."
-    },
-    {
       "id": "inv_1001",
-      "invoiceNumber": "INV-2026-001",
+      "invoiceNumber": "INV-2026-IN-001",
       "customerId": "cust_01",
       "subscriptionId": "sub_001",
       "issueDate": "2026-10-15",
@@ -436,26 +395,26 @@
         {
           "description": "Brightloop Growth Tier (Monthly)",
           "quantity": 1,
-          "unitPrice": 299,
-          "amount": 299
+          "unitPrice": 24999,
+          "amount": 24999
         },
         {
           "description": "Additional Member Seats (2 seats)",
           "quantity": 2,
-          "unitPrice": 25,
-          "amount": 50
+          "unitPrice": 1999,
+          "amount": 3998
         }
       ],
-      "subtotal": 349,
+      "subtotal": 28997,
       "discountAmount": 0,
-      "taxAmount": 28.79,
-      "total": 377.79,
+      "taxAmount": 5219.46,
+      "total": 34216.46,
       "paidAt": "2026-10-16T11:24:00Z",
-      "paymentMethod": "Credit Card (ending 4242)"
+      "paymentMethod": "UPI AutoPay (NPCI Mandate)"
     },
     {
       "id": "inv_1002",
-      "invoiceNumber": "INV-2026-002",
+      "invoiceNumber": "INV-2026-IN-002",
       "customerId": "cust_02",
       "subscriptionId": "sub_002",
       "issueDate": "2026-10-01",
@@ -465,26 +424,26 @@
         {
           "description": "Brightloop Enterprise Scale (Monthly)",
           "quantity": 1,
-          "unitPrice": 899,
-          "amount": 899
+          "unitPrice": 74999,
+          "amount": 74999
         },
         {
-          "description": "High-Concurrency Processing Pool",
+          "description": "High-Concurrency Processing Pool (Mumbai DC)",
           "quantity": 1,
-          "unitPrice": 675,
-          "amount": 675
+          "unitPrice": 52485,
+          "amount": 52485
         }
       ],
-      "subtotal": 1574,
-      "discountAmount": 157.4,
-      "taxAmount": 116.87,
-      "total": 1533.47,
+      "subtotal": 127484,
+      "discountAmount": 12748.4,
+      "taxAmount": 20652.41,
+      "total": 135388.01,
       "paidAt": "2026-10-03T16:02:00Z",
-      "paymentMethod": "ACH Direct Transfer"
+      "paymentMethod": "HDFC Corporate NetBanking (NEFT/RTGS)"
     },
     {
       "id": "inv_1003",
-      "invoiceNumber": "INV-2026-003",
+      "invoiceNumber": "INV-2026-IN-003",
       "customerId": "cust_04",
       "subscriptionId": "sub_004",
       "issueDate": "2026-09-10",
@@ -494,20 +453,20 @@
         {
           "description": "Starter Tier - Edge Ingestion Service",
           "quantity": 1,
-          "unitPrice": 99,
-          "amount": 99
+          "unitPrice": 7999,
+          "amount": 7999
         }
       ],
-      "subtotal": 99,
+      "subtotal": 7999,
       "discountAmount": 0,
-      "taxAmount": 8.17,
-      "total": 107.17,
+      "taxAmount": 1439.82,
+      "total": 9438.82,
       "paidAt": null,
-      "notes": "Automated dunning email #3 sent. Card declined: Insufficient funds."
+      "notes": "Automated dunning email #3 sent. UPI e-Mandate auto-debit failed: Bank server timeout."
     },
     {
       "id": "inv_1004",
-      "invoiceNumber": "INV-2026-004",
+      "invoiceNumber": "INV-2026-IN-004",
       "customerId": "cust_05",
       "subscriptionId": "sub_005",
       "issueDate": "2026-10-04",
@@ -517,26 +476,26 @@
         {
           "description": "Brightloop Enterprise Scale (Monthly)",
           "quantity": 1,
-          "unitPrice": 899,
-          "amount": 899
+          "unitPrice": 74999,
+          "amount": 74999
         },
         {
-          "description": "Dedicated Private VPC Peering",
+          "description": "Dedicated Private VPC Peering (AWS Mumbai)",
           "quantity": 1,
-          "unitPrice": 1350,
-          "amount": 1350
+          "unitPrice": 104970,
+          "amount": 104970
         }
       ],
-      "subtotal": 2249,
+      "subtotal": 179969,
       "discountAmount": 0,
-      "taxAmount": 185.54,
-      "total": 2434.54,
+      "taxAmount": 32394.42,
+      "total": 212363.42,
       "paidAt": "2026-10-05T09:12:00Z",
-      "paymentMethod": "Wire Transfer #WT-8941"
+      "paymentMethod": "RTGS Transfer #HDFC-RTGS-894102"
     },
     {
       "id": "inv_1005",
-      "invoiceNumber": "INV-2026-005",
+      "invoiceNumber": "INV-2026-IN-005",
       "customerId": "cust_02",
       "subscriptionId": "sub_002",
       "issueDate": "2026-10-28",
@@ -546,159 +505,159 @@
         {
           "description": "Brightloop Analytics Suite Addon",
           "quantity": 1,
-          "unitPrice": 149,
-          "amount": 149
+          "unitPrice": 12499,
+          "amount": 12499
         },
         {
           "description": "Machine Learning Churn Telemetry Engine",
           "quantity": 1,
-          "unitPrice": 250,
-          "amount": 250
+          "unitPrice": 20000,
+          "amount": 20000
         }
       ],
-      "subtotal": 399,
-      "discountAmount": 39.9,
-      "taxAmount": 29.63,
-      "total": 388.73,
+      "subtotal": 32499,
+      "discountAmount": 3249.9,
+      "taxAmount": 5264.84,
+      "total": 34513.94,
       "paidAt": null,
-      "notes": "Scheduled for automatic ACH debit on Nov 01."
+      "notes": "Scheduled for automatic corporate e-NACH debit on Nov 01."
     }
   ],
   "payments": [
     {
       "id": "pay_001",
-      "paymentReference": "PAY-2026-901",
+      "paymentReference": "PAY-2026-IN-901",
       "invoiceId": "inv_1001",
       "customerId": "cust_01",
-      "amount": 377.79,
-      "currency": "USD",
-      "paymentMethod": "credit_card",
+      "amount": 34216.46,
+      "currency": "INR",
+      "paymentMethod": "upi",
       "status": "successful",
-      "transactionId": "ch_3M4oKz2eZvKYlo2C0p19G92a",
+      "transactionId": "upi_ref_394820192841@hdfc",
       "createdAt": "2026-10-16T11:24:00Z"
     },
     {
       "id": "pay_002",
-      "paymentReference": "PAY-2026-902",
+      "paymentReference": "PAY-2026-IN-902",
       "invoiceId": "inv_1002",
       "customerId": "cust_02",
-      "amount": 1533.47,
-      "currency": "USD",
+      "amount": 135388.01,
+      "currency": "INR",
       "paymentMethod": "bank_transfer",
       "status": "successful",
-      "transactionId": "ach_18840192837190",
+      "transactionId": "neft_hdfc_89240192837190",
       "createdAt": "2026-10-03T16:02:00Z"
     },
     {
       "id": "pay_003",
-      "paymentReference": "PAY-2026-903",
+      "paymentReference": "PAY-2026-IN-903",
       "invoiceId": "inv_1004",
       "customerId": "cust_05",
-      "amount": 2434.54,
-      "currency": "USD",
+      "amount": 212363.42,
+      "currency": "INR",
       "paymentMethod": "wire",
       "status": "successful",
-      "transactionId": "wire_ref_89410294",
+      "transactionId": "rtgs_ref_89410294718",
       "createdAt": "2026-10-05T09:12:00Z"
     },
     {
       "id": "pay_004",
-      "paymentReference": "PAY-2026-904",
+      "paymentReference": "PAY-2026-IN-904",
       "invoiceId": "inv_1003",
       "customerId": "cust_04",
-      "amount": 107.17,
-      "currency": "USD",
-      "paymentMethod": "credit_card",
+      "amount": 9438.82,
+      "currency": "INR",
+      "paymentMethod": "upi",
       "status": "failed",
-      "failureReason": "card_declined_insufficient_funds",
-      "transactionId": "ch_3M4wLx2eZvKYlo2C99142b",
+      "failureReason": "upi_mandate_bank_server_timeout",
+      "transactionId": "upi_err_8924019481@ybl",
       "createdAt": "2026-09-24T10:15:00Z"
     }
   ],
   "quotations": [
     {
       "id": "qt_001",
-      "quotationNumber": "QUO-2026-042",
+      "quotationNumber": "QUO-2026-IN-042",
       "customerId": "cust_03",
-      "customerName": "PulseFlow Media",
-      "contactEmail": "cbennett@pulseflow.co",
+      "customerName": "Infosys Limited",
+      "contactEmail": "priya.narayanan@infosys.com",
       "status": "accepted",
       "items": [
         {
           "planId": "plan_enterprise_mo",
           "name": "Brightloop Enterprise Scale (Annual Contract)",
           "quantity": 1,
-          "unitPrice": 8990,
-          "total": 8990
+          "unitPrice": 749990,
+          "total": 749990
         },
         {
           "planId": "plan_shield_addon",
-          "name": "Dedicated SOC-2 Security Shield Addon",
+          "name": "Dedicated RBI & SOC-2 Compliance Shield Addon",
           "quantity": 1,
-          "unitPrice": 3990,
-          "total": 3990
+          "unitPrice": 299990,
+          "total": 299990
         }
       ],
-      "subtotal": 12980,
+      "subtotal": 1049980,
       "discountCode": "GROWTH20",
-      "discountAmount": 2596,
-      "taxRate": 8.25,
-      "taxAmount": 856.68,
-      "total": 11240.68,
+      "discountAmount": 209996,
+      "taxRate": 18,
+      "taxAmount": 151197.12,
+      "total": 991181.12,
       "validUntil": "2026-11-30",
-      "notes": "Custom annual quote with enterprise SLAs and dedicated account management.",
+      "notes": "Annual enterprise SLA agreement with dedicated support engineering team in Bengaluru.",
       "createdAt": "2026-10-20T14:15:00Z"
     },
     {
       "id": "qt_002",
-      "quotationNumber": "QUO-2026-043",
+      "quotationNumber": "QUO-2026-IN-043",
       "customerId": "cust_01",
-      "customerName": "Acme Corporation",
-      "contactEmail": "elena@acme.corp",
-      "status": "accepted",
+      "customerName": "Tata Consultancy Services (TCS)",
+      "contactEmail": "krithika.iyer@tcs.com",
+      "status": "sent",
       "items": [
         {
           "planId": "plan_shield_addon",
           "name": "Enterprise Shield Security Upgrade",
           "quantity": 1,
-          "unitPrice": 399,
-          "total": 399
+          "unitPrice": 29999,
+          "total": 29999
         }
       ],
-      "subtotal": 399,
+      "subtotal": 29999,
       "discountCode": null,
       "discountAmount": 0,
-      "taxRate": 8.25,
-      "taxAmount": 32.92,
-      "total": 431.92,
+      "taxRate": 18,
+      "taxAmount": 5399.82,
+      "total": 35398.82,
       "validUntil": "2026-11-15",
-      "notes": "Pending procurement approval from legal.",
+      "notes": "Pending procurement approval from Mumbai corporate headquarters.",
       "createdAt": "2026-10-26T10:00:00Z"
     },
     {
       "id": "qt_003",
-      "quotationNumber": "QUO-2026-044",
+      "quotationNumber": "QUO-2026-IN-044",
       "customerId": "cust_06",
-      "customerName": "Zephyr Analytics",
-      "contactEmail": "liam@zephyranalytics.com",
+      "customerName": "Zomato Limited",
+      "contactEmail": "tanmay.bhatia@zomato.com",
       "status": "draft",
       "items": [
         {
           "planId": "plan_growth_mo",
           "name": "Growth Tier Reactivation + 5 Seats",
           "quantity": 1,
-          "unitPrice": 424,
-          "total": 424
+          "unitPrice": 34994,
+          "total": 34994
         }
       ],
-      "subtotal": 424,
+      "subtotal": 34994,
       "discountCode": "STARTUP50",
-      "discountAmount": 212,
-      "taxRate": 8.25,
-      "taxAmount": 17.49,
-      "total": 229.49,
+      "discountAmount": 17497,
+      "taxRate": 18,
+      "taxAmount": 3149.46,
+      "total": 20646.46,
       "validUntil": "2026-11-20",
-      "notes": "Reactivation package proposal.",
+      "notes": "Reactivation package proposal for Gurugram engineering team.",
       "createdAt": "2026-10-29T16:30:00Z"
     }
   ],
@@ -706,10 +665,10 @@
     {
       "id": "disc_01",
       "code": "STARTUP50",
-      "name": "Early-Stage Startup 50% Off",
+      "name": "DPIIT Registered Startup 50% Off",
       "type": "percentage",
       "value": 50,
-      "currency": "USD",
+      "currency": "INR",
       "validUntil": "2026-12-31",
       "usageLimit": 100,
       "usedCount": 38,
@@ -721,7 +680,7 @@
       "name": "Annual Commitment 20% Discount",
       "type": "percentage",
       "value": 20,
-      "currency": "USD",
+      "currency": "INR",
       "validUntil": "2027-06-30",
       "usageLimit": 250,
       "usedCount": 71,
@@ -729,11 +688,11 @@
     },
     {
       "id": "disc_03",
-      "code": "WELCOME100",
-      "name": "$100 First Month Credit",
+      "code": "WELCOME10K",
+      "name": "₹10,000 First Month Cloud Credit",
       "type": "fixed",
-      "value": 100,
-      "currency": "USD",
+      "value": 10000,
+      "currency": "INR",
       "validUntil": "2026-11-30",
       "usageLimit": 50,
       "usedCount": 44,
@@ -743,103 +702,58 @@
   "taxes": [
     {
       "id": "tax_01",
-      "name": "Standard US Sales Tax",
-      "rate": 8.25,
-      "country": "United States",
-      "region": "Texas / California",
+      "name": "GST 18% (Standard SaaS Rate - CGST 9% + SGST 9% / IGST 18%)",
+      "rate": 18,
+      "country": "India",
+      "region": "All States & Union Territories",
       "taxType": "exclusive",
       "status": "active"
     },
     {
       "id": "tax_02",
-      "name": "EU Cross-Border Standard VAT",
-      "rate": 20,
-      "country": "European Union",
-      "region": "All EU Member States",
+      "name": "GST 12% (IT Hardware & Cloud Appliance Services)",
+      "rate": 12,
+      "country": "India",
+      "region": "All States",
       "taxType": "exclusive",
       "status": "active"
     },
     {
       "id": "tax_03",
-      "name": "Canada GST / HST",
-      "rate": 5,
-      "country": "Canada",
-      "region": "Federal",
+      "name": "TDS Section 194J (2% on Technical Services)",
+      "rate": 2,
+      "country": "India",
+      "region": "Corporate Client Accounts",
       "taxType": "exclusive",
       "status": "active"
     }
   ],
   "auditLogs": [
     {
-      "id": "log_1793425425382_b8lz",
-      "action": "SCHEDULED_CYCLE_RAN",
-      "entityType": "billing_engine",
-      "entityId": "engine",
-      "actor": "Megha (Admin)",
-      "details": "Billing cycle executed: 0 renewals invoiced, 0 marked overdue.",
-      "timestamp": "2026-10-31T05:43:45.382Z"
-    },
-    {
-      "id": "log_1793425404273_gnp9",
-      "action": "SCHEDULED_CYCLE_RAN",
-      "entityType": "billing_engine",
-      "entityId": "engine",
-      "actor": "Megha (Admin)",
-      "details": "Billing cycle executed: 0 renewals invoiced, 0 marked overdue.",
-      "timestamp": "2026-10-31T05:43:24.273Z"
-    },
-    {
-      "id": "log_1793425401610_5t17",
-      "action": "SCHEDULED_CYCLE_RAN",
-      "entityType": "billing_engine",
-      "entityId": "engine",
-      "actor": "Megha (Admin)",
-      "details": "Billing cycle executed: 0 renewals invoiced, 0 marked overdue.",
-      "timestamp": "2026-10-31T05:43:21.610Z"
-    },
-    {
-      "id": "log_1793425399026_qujt",
-      "action": "SCHEDULED_CYCLE_RAN",
-      "entityType": "billing_engine",
-      "entityId": "engine",
-      "actor": "Megha (Admin)",
-      "details": "Billing cycle executed: 0 renewals invoiced, 0 marked overdue.",
-      "timestamp": "2026-10-31T05:43:19.026Z"
-    },
-    {
-      "id": "log_1793424156902_3anl",
-      "action": "QUOTATION_CONVERTED",
-      "entityType": "quotation",
-      "entityId": "qt_002",
-      "actor": "Megha (Admin)",
-      "details": "Converted quotation QUO-2026-043 into subscription sub_mvvyfrvp & invoice INV-2026-011",
-      "timestamp": "2026-10-31T05:22:36.902Z"
-    },
-    {
       "id": "log_001",
       "action": "INVOICE_GENERATED",
       "entityType": "invoice",
-      "entityId": "INV-2026-005",
+      "entityId": "INV-2026-IN-005",
       "actor": "Megha (Admin)",
-      "details": "Generated monthly billing invoice for Nexus Dynamics ($388.73)",
+      "details": "Generated monthly GST billing invoice for Reliance Jio Platforms (₹34,513.94)",
       "timestamp": "2026-10-28T10:04:15Z"
     },
     {
       "id": "log_002",
       "action": "PAYMENT_RECONCILED",
       "entityType": "payment",
-      "entityId": "PAY-2026-901",
-      "actor": "Stripe Webhook Gateway",
-      "details": "Reconciled payment of $377.79 for invoice INV-2026-001",
+      "entityId": "PAY-2026-IN-901",
+      "actor": "Razorpay UPI Gateway",
+      "details": "Reconciled UPI AutoPay payment of ₹34,216.46 for invoice INV-2026-IN-001 (TCS)",
       "timestamp": "2026-10-16T11:24:10Z"
     },
     {
       "id": "log_003",
       "action": "QUOTATION_ACCEPTED",
       "entityType": "quotation",
-      "entityId": "QUO-2026-042",
+      "entityId": "QUO-2026-IN-042",
       "actor": "Megha (Admin)",
-      "details": "Accepted annual quotation for PulseFlow Media ($11,240.68)",
+      "details": "Accepted annual quotation for Infosys Limited (₹9,91,181.12)",
       "timestamp": "2026-10-20T14:15:00Z"
     },
     {
@@ -848,7 +762,7 @@
       "entityType": "subscription",
       "entityId": "sub_006",
       "actor": "Megha (Admin)",
-      "details": "Customer requested temporary 60-day pause for Zephyr Analytics",
+      "details": "Customer requested temporary 60-day pause for Zomato Limited",
       "timestamp": "2026-09-25T14:00:00Z"
     }
   ]

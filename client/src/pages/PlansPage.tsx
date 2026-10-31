@@ -221,7 +221,7 @@ export const PlansPage: React.FC = () => {
                 {/* Price Display */}
                 <div className="mt-4 flex items-baseline gap-1">
                   <span className="text-3xl font-extrabold text-slate-900 font-mono tracking-tight group-hover:scale-105 transition-transform origin-left">
-                    ${calculatedPrice.toLocaleString()}
+                    ₹{calculatedPrice.toLocaleString('en-IN')}
                   </span>
                   <span className="text-xs text-slate-500 font-medium">
                     /{plan.billingInterval === 'annual' ? 'yr' : 'mo'}
@@ -312,7 +312,7 @@ export const PlansPage: React.FC = () => {
       {/* Add Plan Modal */}
       {isAddModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in">
-          <div className="w-full max-w-lg bg-white rounded-2xl shadow-modal border border-slate-200 p-6 space-y-4">
+          <div className="w-full max-w-xl bg-white rounded-2xl shadow-modal border border-slate-200 p-6 space-y-4 max-h-[90vh] overflow-y-auto">
             <h3 className="text-base font-semibold text-slate-900">Create Pricing Plan</h3>
             <form onSubmit={handleCreatePlan} className="space-y-4">
               <div>
@@ -343,7 +343,7 @@ export const PlansPage: React.FC = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-slate-700 mb-1">Billing Interval</label>
                   <select
@@ -351,12 +351,14 @@ export const PlansPage: React.FC = () => {
                     onChange={e => setFormData({ ...formData, billingInterval: e.target.value })}
                     className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden"
                   >
+                    <option value="daily">Daily</option>
+                    <option value="weekly">Weekly</option>
                     <option value="monthly">Monthly</option>
                     <option value="annual">Annual</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1">Base Price ($) *</label>
+                  <label className="block text-xs font-medium text-slate-700 mb-1">Base Price (₹) *</label>
                   <input
                     type="number"
                     required
@@ -366,6 +368,54 @@ export const PlansPage: React.FC = () => {
                     className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden"
                   />
                 </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 mb-1">Min Quantity</label>
+                  <input
+                    type="number"
+                    min={1}
+                    defaultValue={1}
+                    className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden"
+                    placeholder="1"
+                  />
+                </div>
+              </div>
+
+              {/* Availability Dates */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 mb-1">Available From</label>
+                  <input
+                    type="date"
+                    className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 mb-1">Available Until (optional)</label>
+                  <input
+                    type="date"
+                    className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden"
+                  />
+                </div>
+              </div>
+
+              {/* Lifecycle Controls */}
+              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 space-y-2.5">
+                <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Plan Lifecycle Controls</p>
+                {[
+                  { id: 'autoClose', label: 'Auto-close when availability period ends', default: true },
+                  { id: 'allowEarlyClose', label: 'Allow early cancellation before expiry', default: true },
+                  { id: 'allowPause', label: 'Allow subscription pause / resume', default: true },
+                  { id: 'allowRenewal', label: 'Allow early manual renewal', default: true },
+                ].map(ctrl => (
+                  <label key={ctrl.id} className="flex items-center gap-2.5 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      defaultChecked={ctrl.default}
+                      className="w-4 h-4 rounded text-primary focus:ring-primary accent-primary"
+                    />
+                    <span className="text-xs text-slate-700 group-hover:text-slate-900">{ctrl.label}</span>
+                  </label>
+                ))}
               </div>
 
               {/* Seat based toggle */}
@@ -382,7 +432,7 @@ export const PlansPage: React.FC = () => {
                 {formData.seatBased && (
                   <div>
                     <label className="block text-xs font-medium text-slate-600 mb-1">
-                      Price per additional seat ($)
+                      Price per additional seat (₹)
                     </label>
                     <input
                       type="number"

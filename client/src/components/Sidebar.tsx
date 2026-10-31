@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard,
+  CalendarDays,
   Users,
   Package,
   CreditCard,
@@ -36,6 +37,7 @@ interface SidebarProps {
 
 const navItems = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
+  { to: '/calendar', label: 'Sales Calendar', icon: CalendarDays },
   { to: '/customers', label: 'Customers', icon: Users },
   { to: '/products', label: 'Products', icon: Package },
   { to: '/plans', label: 'Plans', icon: CreditCard },
@@ -60,12 +62,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const [runningCycle, setRunningCycle] = useState(false);
   const [isWidgetBrightened, setIsWidgetBrightened] = useState(false);
   const [isEnvMenuOpen, setIsEnvMenuOpen] = useState(false);
-  const [currentEnv, setCurrentEnv] = useState('Production US-East');
+  const [currentEnv, setCurrentEnv] = useState('Production Mumbai (AWS)');
 
   const envs = [
-    { name: 'Production US-East', ping: '12ms', status: 'live' },
-    { name: 'EU-Frankfurt Cluster', ping: '28ms', status: 'live' },
-    { name: 'Staging Environment', ping: '16ms', status: 'ready' },
+    { name: 'Production Mumbai (AWS)', ping: '11ms', status: 'live' },
+    { name: 'DR Hyderabad Cluster', ping: '22ms', status: 'live' },
+    { name: 'Staging Environment', ping: '14ms', status: 'ready' },
   ];
 
   const handleRunCycle = async (e: React.MouseEvent) => {
@@ -122,11 +124,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
               >
                 <div className="flex items-center gap-2.5 min-w-0">
                   <div className="w-8 h-8 rounded-xl bg-primary flex items-center justify-center shrink-0 shadow-sm shadow-primary/30 group-hover:scale-105 transition-transform">
-                    <span className="text-white font-bold text-sm tracking-tight">S</span>
+                    <span className="text-white font-bold text-sm tracking-tight">B</span>
                   </div>
                   <div className="flex flex-col min-w-0">
                     <span className="font-semibold text-slate-900 text-sm tracking-tight leading-tight truncate">
-                      SubscriptIQ
+                      Brightloop
                     </span>
                     <span className="text-[10px] text-slate-400 flex items-center gap-1 font-medium mt-0.5">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -245,15 +247,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
               {/* Figures */}
               <div className="flex items-baseline justify-between text-xs mb-2">
-                <span className="font-bold text-slate-900 font-mono group-hover:text-primary transition-colors">$19,450</span>
-                <span className="text-slate-400 font-medium">Goal: $25k</span>
+                <span className="font-bold text-slate-900 font-mono group-hover:text-primary transition-colors">₹19,45,000</span>
+                <span className="text-slate-400 font-medium">Goal: ₹25L</span>
               </div>
 
               {/* Expanded Velocity Details on Hover */}
               <div className="max-h-0 group-hover:max-h-24 overflow-hidden transition-all duration-300 opacity-0 group-hover:opacity-100 pt-0 group-hover:pt-2 border-t border-transparent group-hover:border-primary/20 mb-0 group-hover:mb-2.5 space-y-1 text-[11px] text-slate-600">
                 <div className="flex justify-between">
                   <span className="text-slate-400">Monthly Run Rate:</span>
-                  <span className="font-semibold text-primary font-mono">+$1,650</span>
+                  <span className="font-semibold text-primary font-mono">+₹1,65,000</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-400">Pace:</span>

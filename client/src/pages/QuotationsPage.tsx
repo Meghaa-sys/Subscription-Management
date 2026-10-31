@@ -28,7 +28,7 @@ export const QuotationsPage: React.FC = () => {
   const [selectedPlanId, setSelectedPlanId] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [discountCode, setDiscountCode] = useState('');
-  const [taxRate, setTaxRate] = useState(8.25);
+  const [taxRate, setTaxRate] = useState(18.0);
   const [notes, setNotes] = useState('');
 
   const { success, error } = useToast();
@@ -171,10 +171,10 @@ export const QuotationsPage: React.FC = () => {
                       <StatusBadge status={quote.status} size="sm" />
                     </td>
                     <td className="py-3.5 px-6 font-mono text-slate-600">
-                      ${quote.subtotal.toFixed(2)}
+                      ₹{quote.subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                     </td>
                     <td className="py-3.5 px-6 font-mono font-bold text-slate-900">
-                      ${quote.total.toFixed(2)}
+                      ₹{quote.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                     </td>
                     <td className="py-3.5 px-6 text-xs text-slate-500">
                       {quote.validUntil}
@@ -246,7 +246,7 @@ export const QuotationsPage: React.FC = () => {
                   >
                     {plans.map(p => (
                       <option key={p.id} value={p.id}>
-                        {p.name} - ${p.price}/{p.billingInterval}
+                        {p.name} - ₹{p.price.toLocaleString('en-IN')}/{p.billingInterval}
                       </option>
                     ))}
                   </select>
@@ -278,7 +278,7 @@ export const QuotationsPage: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-slate-700 mb-1">
-                    Tax Rate (%)
+                    GST Tax Rate (%)
                   </label>
                   <input
                     type="number"

@@ -88,46 +88,46 @@ function calculateDashboardStats(timeFilter = '12 months') {
     { name: 'Cancelled / Past Due', count: statusCounts.cancelled, percentage: Math.round((statusCounts.cancelled / totalSubs) * 100), color: '#F43F5E' },
   ];
 
-  // Revenue Overview Chart Data
+  // Revenue Overview Chart Data with realistic INR enterprise fluctuations
   let revenueChart = [];
   if (timeFilter === '7 days') {
     revenueChart = [
-      { period: 'Mon', collected: 780, outstanding: 120, total: 900 },
-      { period: 'Tue', collected: 1240, outstanding: 150, total: 1390 },
-      { period: 'Wed', collected: 950, outstanding: 80, total: 1030 },
-      { period: 'Thu', collected: 1450, outstanding: 210, total: 1660 },
-      { period: 'Fri', collected: 1890, outstanding: 340, total: 2230 },
-      { period: 'Sat', collected: 620, outstanding: 50, total: 670 },
-      { period: 'Sun', collected: 810, outstanding: 95, total: 905 },
+      { period: 'Mon', collected: 185000, outstanding: 24000, total: 209000 },
+      { period: 'Tue', collected: 260000, outstanding: 32000, total: 292000 },
+      { period: 'Wed', collected: 195000, outstanding: 18000, total: 213000 },
+      { period: 'Thu', collected: 310000, outstanding: 42000, total: 352000 },
+      { period: 'Fri', collected: 420000, outstanding: 58000, total: 478000 },
+      { period: 'Sat', collected: 120000, outstanding: 14000, total: 134000 },
+      { period: 'Sun', collected: 145000, outstanding: 16000, total: 161000 },
     ];
   } else if (timeFilter === '30 days') {
     revenueChart = [
-      { period: 'Week 1', collected: 2840, outstanding: 450, total: 3290 },
-      { period: 'Week 2', collected: 3620, outstanding: 390, total: 4010 },
-      { period: 'Week 3', collected: 4190, outstanding: 580, total: 4770 },
-      { period: 'Week 4', collected: 4850, outstanding: 610, total: 5460 },
+      { period: 'Week 1', collected: 480000, outstanding: 62000, total: 542000 },
+      { period: 'Week 2', collected: 620000, outstanding: 75000, total: 695000 },
+      { period: 'Week 3', collected: 510000, outstanding: 58000, total: 568000 },
+      { period: 'Week 4', collected: 875000, outstanding: 110000, total: 985000 },
     ];
   } else if (timeFilter === '3 months') {
     revenueChart = [
-      { period: 'August', collected: 12400, outstanding: 1450, total: 13850 },
-      { period: 'September', collected: 14800, outstanding: 1200, total: 16000 },
-      { period: 'October', collected: 17950, outstanding: 1890, total: 19840 },
+      { period: 'August', collected: 1880000, outstanding: 210000, total: 2090000 },
+      { period: 'September', collected: 2240000, outstanding: 250000, total: 2490000 },
+      { period: 'October', collected: 2480000, outstanding: 275000, total: 2755000 },
     ];
   } else {
-    // 12 months default
+    // 12 months default with authentic Indian financial year & festive fluctuations
     revenueChart = [
-      { period: 'Nov', collected: 8400, outstanding: 900, total: 9300 },
-      { period: 'Dec', collected: 9600, outstanding: 1100, total: 10700 },
-      { period: 'Jan', collected: 10800, outstanding: 1300, total: 12100 },
-      { period: 'Feb', collected: 11500, outstanding: 1200, total: 12700 },
-      { period: 'Mar', collected: 12900, outstanding: 1400, total: 14300 },
-      { period: 'Apr', collected: 13800, outstanding: 1550, total: 15350 },
-      { period: 'May', collected: 14600, outstanding: 1600, total: 16200 },
-      { period: 'Jun', collected: 15200, outstanding: 1350, total: 16550 },
-      { period: 'Jul', collected: 16100, outstanding: 1420, total: 17520 },
-      { period: 'Aug', collected: 16900, outstanding: 1500, total: 18400 },
-      { period: 'Sep', collected: 17800, outstanding: 1200, total: 19000 },
-      { period: 'Oct', collected: 19450, outstanding: 1680, total: 21130 },
+      { period: 'Nov', collected: 1140000, outstanding: 180000, total: 1320000 },
+      { period: 'Dec', collected: 1480000, outstanding: 210000, total: 1690000 },
+      { period: 'Jan', collected: 1260000, outstanding: 140000, total: 1400000 },
+      { period: 'Feb', collected: 1390000, outstanding: 165000, total: 1555000 },
+      { period: 'Mar', collected: 2150000, outstanding: 290000, total: 2440000 },
+      { period: 'Apr', collected: 1520000, outstanding: 175000, total: 1695000 },
+      { period: 'May', collected: 1640000, outstanding: 190000, total: 1830000 },
+      { period: 'Jun', collected: 1910000, outstanding: 220000, total: 2130000 },
+      { period: 'Jul', collected: 1730000, outstanding: 180000, total: 1910000 },
+      { period: 'Aug', collected: 1880000, outstanding: 210000, total: 2090000 },
+      { period: 'Sep', collected: 2240000, outstanding: 250000, total: 2490000 },
+      { period: 'Oct', collected: 2480000, outstanding: 275000, total: 2755000 },
     ];
   }
 
@@ -339,7 +339,7 @@ app.post('/api/plans', (req, res) => {
     name,
     billingInterval: billingInterval || 'monthly',
     price: Number(price),
-    currency: 'USD',
+    currency: 'INR',
     seatBased: Boolean(seatBased),
     pricePerSeat: Number(pricePerSeat || 0),
     activeSubscribers: 0,
@@ -347,7 +347,7 @@ app.post('/api/plans', (req, res) => {
   };
 
   db.data.plans.push(newPlan);
-  db.logAudit('PLAN_CREATED', 'plan', newPlan.id, `Created plan ${newPlan.name} ($${newPlan.price}/${newPlan.billingInterval})`);
+  db.logAudit('PLAN_CREATED', 'plan', newPlan.id, `Created plan ${newPlan.name} (₹${newPlan.price}/${newPlan.billingInterval})`);
   db.save();
   res.status(201).json(newPlan);
 });
@@ -568,13 +568,13 @@ app.post('/api/subscriptions', (req, res) => {
     ],
     subtotal: totalAmount,
     discountAmount: 0,
-    taxAmount: Number((totalAmount * 0.0825).toFixed(2)),
-    total: Number((totalAmount * 1.0825).toFixed(2)),
+    taxAmount: Number((totalAmount * 0.18).toFixed(2)),
+    total: Number((totalAmount * 1.18).toFixed(2)),
     paidAt: null,
   };
   db.data.invoices.unshift(newInvoice);
 
-  db.logAudit('SUBSCRIPTION_CREATED', 'subscription', newSub.id, `Created subscription for ${customer.name} ($${totalAmount}/${newSub.billingCycle})`);
+  db.logAudit('SUBSCRIPTION_CREATED', 'subscription', newSub.id, `Created subscription for ${customer.name} (₹${totalAmount}/${newSub.billingCycle})`);
   db.save();
   res.status(201).json(newSub);
 });
@@ -776,8 +776,8 @@ app.get('/api/reports', (req, res) => {
     grossChurnRate: '0.6%',
     netRetentionRate: '118.4%',
     quickRatio: '4.8',
-    customerLifetimeValue: '$18,400',
-    averageRevenuePerAccount: '$940 / mo',
+    customerLifetimeValue: '₹14,80,000',
+    averageRevenuePerAccount: '₹74,500 / mo',
   };
 
   // Renewal forecast for next 30 days
@@ -804,6 +804,157 @@ app.get('/api/reports', (req, res) => {
     collectionRate: '97.4%',
   });
 });
+
+// SALES & REVENUE CALENDAR (Monthly & Daily Sales with Growth/Loss Indicators)
+const handleSalesCalendar = (req, res) => {
+  const year = parseInt(req.query.year) || 2026;
+  const month = parseInt(req.query.month) || 10; // Default: October (1-indexed)
+
+  const daysInMonth = new Date(year, month, 0).getDate();
+  const { payments, invoices, subscriptions, customers } = db.data;
+
+  // Build daily data points for all days in month
+  const days = [];
+  let prevDayRevenue = 65000;
+  let totalSales = 0;
+  let totalLoss = 0;
+  let peakDay = { day: 1, revenue: 0 };
+  let growthDaysCount = 0;
+  let lossDaysCount = 0;
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dayStr = d < 10 ? `0${d}` : `${d}`;
+    const monthStr = month < 10 ? `0${month}` : `${month}`;
+    const dateStr = `${year}-${monthStr}-${dayStr}`;
+    const dayOfWeek = new Date(year, month - 1, d).getDay(); // 0 = Sun, 1 = Mon, ..., 6 = Sat
+
+    // Find payments on this date
+    const dayPayments = payments.filter(p => p.createdAt && p.createdAt.startsWith(dateStr));
+    
+    // Find invoices due or issued on this date
+    const dayInvoices = invoices.filter(i => i.issueDate === dateStr || i.paidAt?.startsWith(dateStr));
+
+    // Calculate revenue collected on this date
+    let dayRevenue = dayPayments
+      .filter(p => p.status === 'successful')
+      .reduce((sum, p) => sum + p.amount, 0);
+
+    // If day is within the demo simulation range (Oct 2026), enrich with realistic calendar sales velocity (in INR)
+    if (month === 10 && dayRevenue === 0) {
+      if (d === 1) dayRevenue = 135388;
+      else if (d === 3) dayRevenue = 45000;
+      else if (d === 5) dayRevenue = 212363;
+      else if (d === 8) dayRevenue = 34990;
+      else if (d === 12) dayRevenue = 74999;
+      else if (d === 15) dayRevenue = 125000;
+      else if (d === 16) dayRevenue = 34216;
+      else if (d === 19) dayRevenue = 249990;
+      else if (d === 22) dayRevenue = 68000;
+      else if (d === 25) dayRevenue = 145000;
+      else if (d === 28) dayRevenue = 224900;
+      else if (d === 30) dayRevenue = 89900;
+      else if (d % 4 === 0) dayRevenue = 29900;
+    }
+
+    // Check for dunning losses or overdue invoices
+    let dayLoss = dayPayments
+      .filter(p => p.status === 'failed')
+      .reduce((sum, p) => sum + p.amount, 0);
+
+    if (month === 10 && d === 24) {
+      dayLoss = 9438.82; // Failed transaction
+    }
+
+    totalSales += dayRevenue;
+    totalLoss += dayLoss;
+
+    if (dayRevenue > peakDay.revenue) {
+      peakDay = { day: d, revenue: dayRevenue, date: dateStr };
+    }
+
+    // Growth vs previous day
+    const growthDiff = dayRevenue - prevDayRevenue;
+    const growthPercent = prevDayRevenue > 0
+      ? Math.round((growthDiff / prevDayRevenue) * 100)
+      : (dayRevenue > 0 ? 100 : 0);
+
+    // Status category: 'peak' | 'growth' | 'loss' | 'idle'
+    let status = 'idle';
+    if (dayLoss > 0) {
+      status = 'loss';
+      lossDaysCount++;
+    } else if (dayRevenue >= 150000) {
+      status = 'peak';
+      growthDaysCount++;
+    } else if (dayRevenue > 0) {
+      status = 'growth';
+      growthDaysCount++;
+    }
+
+    // Build event line items for day details inspector with Indian enterprise brands
+    const events = [];
+    if (dayRevenue > 0) {
+      events.push({
+        id: `ev_${d}_1`,
+        type: 'revenue',
+        title: dayRevenue > 150000 ? 'Enterprise Annual Contract Renewal' : 'Monthly Cloud Ingestion Cycle',
+        amount: dayRevenue,
+        status: 'successful',
+        customer: d === 5 ? 'HDFC Bank Limited' : (d === 1 ? 'Reliance Jio Platforms' : (d === 16 ? 'Tata Consultancy Services (TCS)' : (d === 19 ? 'Infosys Limited' : (d === 28 ? 'Flipkart Internet' : 'Zomato Limited')))),
+        channel: d % 2 === 0 ? 'Razorpay UPI AutoPay (NPCI Mandate)' : 'HDFC Corporate NetBanking (NEFT/RTGS)',
+        time: '09:30 AM IST',
+      });
+    }
+    if (dayLoss > 0) {
+      events.push({
+        id: `ev_${d}_loss`,
+        type: 'loss',
+        title: 'Auto-Debit Failed: Bank Server Timeout',
+        amount: dayLoss,
+        status: 'failed',
+        customer: 'Flipkart Internet',
+        channel: 'UPI e-Mandate (NPCI AutoPay)',
+        time: '10:15 AM IST',
+      });
+    }
+
+    days.push({
+      day: d,
+      date: dateStr,
+      dayOfWeek,
+      revenue: Math.round(dayRevenue),
+      loss: Math.round(dayLoss),
+      growthPercent,
+      isPositiveGrowth: growthPercent >= 0,
+      status,
+      transactionsCount: events.length,
+      events,
+    });
+
+    if (dayRevenue > 0) prevDayRevenue = dayRevenue;
+  }
+
+  res.json({
+    year,
+    month,
+    monthName: new Date(year, month - 1, 1).toLocaleDateString('en-US', { month: 'long' }),
+    daysInMonth,
+    days,
+    summary: {
+      totalMonthlySales: Math.round(totalSales),
+      bestSalesDay: peakDay,
+      netGrowth: '+₹1,65,000',
+      growthRatePercent: '+9.2%',
+      lossesAndRisk: Math.round(totalLoss),
+      dailyAverage: Math.round(totalSales / daysInMonth),
+      growthDaysCount,
+      lossDaysCount,
+    },
+  });
+};
+
+app.get('/api/sales-calendar', handleSalesCalendar);
+app.get('/api/calendar', handleSalesCalendar);
 
 // USERS & SETTINGS
 app.get('/api/users', (req, res) => res.json(db.data.users));
@@ -865,8 +1016,8 @@ app.post('/api/billing/run-scheduled-cycle', (req, res) => {
         ],
         subtotal: sub.amount,
         discountAmount: 0,
-        taxAmount: Number((sub.amount * 0.0825).toFixed(2)),
-        total: Number((sub.amount * 1.0825).toFixed(2)),
+        taxAmount: Number((sub.amount * 0.18).toFixed(2)),
+        total: Number((sub.amount * 1.18).toFixed(2)),
         paidAt: null,
       };
       db.data.invoices.unshift(newInvoice);
@@ -909,5 +1060,5 @@ app.post('/api/admin/reset-data', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`SubscriptIQ Backend Server running on port ${PORT}`);
+  console.log(`Brightloop Backend Server running on port ${PORT}`);
 });

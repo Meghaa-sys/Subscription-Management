@@ -209,7 +209,7 @@ export const SubscriptionsPage: React.FC = () => {
                       </p>
                     </td>
                     <td className="py-3.5 px-6 font-mono font-bold text-slate-900">
-                      ${sub.amount.toLocaleString()}
+                      ₹{sub.amount.toLocaleString('en-IN')}
                     </td>
                     <td className="py-3.5 px-6 text-xs">
                       <p className="font-medium text-slate-800">{sub.nextRenewal}</p>
@@ -300,7 +300,7 @@ export const SubscriptionsPage: React.FC = () => {
                 >
                   {plans.map(p => (
                     <option key={p.id} value={p.id}>
-                      {p.name} - ${p.price}/{p.billingInterval}
+                      {p.name} - ₹{p.price.toLocaleString('en-IN')}/{p.billingInterval}
                     </option>
                   ))}
                 </select>

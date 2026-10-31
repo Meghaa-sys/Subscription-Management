@@ -5,8 +5,8 @@ import { Sidebar } from './components/Sidebar';
 import { TopNav } from './components/TopNav';
 import { GlobalSearchModal } from './components/GlobalSearchModal';
 
-// Pages
 import { DashboardPage } from './pages/DashboardPage';
+import { SalesCalendarPage } from './pages/SalesCalendarPage';
 import { CustomersPage } from './pages/CustomersPage';
 import { ProductsPage } from './pages/ProductsPage';
 import { PlansPage } from './pages/PlansPage';
@@ -60,6 +60,7 @@ function AppContent() {
         <main className="flex-1 overflow-y-auto">
           <Routes>
             <Route path="/" element={<DashboardPage dateFilter={dateFilter} />} />
+            <Route path="/calendar" element={<SalesCalendarPage />} />
             <Route path="/customers" element={<CustomersPage />} />
             <Route path="/products" element={<ProductsPage />} />
             <Route path="/plans" element={<PlansPage />} />

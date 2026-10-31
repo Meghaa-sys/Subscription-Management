@@ -13,9 +13,9 @@ export const TaxesPage: React.FC = () => {
   // Form State
   const [formData, setFormData] = useState({
     name: '',
-    rate: 8.25,
-    country: 'United States',
-    region: 'California',
+    rate: 18.0,
+    country: 'India',
+    region: 'All States / Karnataka',
   });
 
   const { success, error } = useToast();
@@ -148,7 +148,7 @@ export const TaxesPage: React.FC = () => {
                   required
                   value={formData.name}
                   onChange={e => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="e.g. UK VAT Standard Rate"
+                  placeholder="e.g. GST 18% (Standard SaaS Rate)"
                   className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden"
                 />
               </div>

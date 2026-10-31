@@ -11,6 +11,7 @@ import {
   ChevronRight,
   Layers,
   Sparkles,
+  CalendarDays,
 } from 'lucide-react';
 import { api } from '../api/client';
 import { DashboardStats } from '../types';
@@ -23,6 +24,7 @@ interface DashboardPageProps {
 }
 
 export const DashboardPage: React.FC<DashboardPageProps> = ({ dateFilter }) => {
+  const [selectedInterval, setSelectedInterval] = useState<string>(dateFilter || '12 months');
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [hoveredBarIndex, setHoveredBarIndex] = useState<number | null>(null);
@@ -33,10 +35,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ dateFilter }) => {
   const navigate = useNavigate();
   const { error } = useToast();
 
-  const loadStats = async () => {
+  const loadStats = async (interval = selectedInterval) => {
     try {
       setLoading(true);
-      const data = await api.getDashboardStats(dateFilter);
+      const data = await api.getDashboardStats(interval);
       setStats(data);
     } catch (err: any) {
       console.error(err);
@@ -47,11 +49,17 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ dateFilter }) => {
   };
 
   useEffect(() => {
-    loadStats();
-    const handleRefetch = () => loadStats();
+    if (dateFilter) {
+      setSelectedInterval(dateFilter);
+    }
+  }, [dateFilter]);
+
+  useEffect(() => {
+    loadStats(selectedInterval);
+    const handleRefetch = () => loadStats(selectedInterval);
     window.addEventListener('billing-cycle-complete', handleRefetch);
     return () => window.removeEventListener('billing-cycle-complete', handleRefetch);
-  }, [dateFilter]);
+  }, [selectedInterval]);
 
   if (loading || !stats) {
     return (
@@ -72,8 +80,34 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ dateFilter }) => {
 
   const { kpis, revenueChart, subscriptionDonut, recentInvoices, upcomingRenewals } = stats;
 
-  // Max value for revenue bar chart scaling
+  // Max value for revenue bar chart scaling & headroom ceiling
   const maxBarValue = Math.max(...revenueChart.map(d => d.total || (d.collected + d.outstanding)), 1);
+  const minBar = revenueChart.reduce((prev, curr) => {
+    const prevTot = prev.total || (prev.collected + prev.outstanding);
+    const currTot = curr.total || (curr.collected + curr.outstanding);
+    return currTot < prevTot ? curr : prev;
+  }, revenueChart[0] || { period: '', total: 0 });
+  const maxBar = revenueChart.reduce((prev, curr) => {
+    const prevTot = prev.total || (prev.collected + prev.outstanding);
+    const currTot = curr.total || (curr.collected + curr.outstanding);
+    return currTot > prevTot ? curr : prev;
+  }, revenueChart[0] || { period: '', total: 0 });
+
+  const minTot = minBar ? (minBar.total || minBar.collected + minBar.outstanding) : 0;
+  const maxTot = maxBar ? (maxBar.total || maxBar.collected + maxBar.outstanding) : 0;
+  const fluctuationPct = minTot > 0 ? Math.round(((maxTot - minTot) / minTot) * 100) : 0;
+
+  // Chart ceiling to give clean headroom
+  const chartCeiling = maxBarValue > 1000000 
+    ? Math.ceil((maxBarValue * 1.1) / 500000) * 500000 
+    : Math.ceil((maxBarValue * 1.15) / 50000) * 50000 || maxBarValue * 1.2;
+
+  const formatLakh = (val: number) => {
+    if (val >= 10000000) return `₹${(val / 10000000).toFixed(1)}Cr`;
+    if (val >= 100000) return `₹${(val / 100000).toFixed(1)}L`;
+    if (val >= 1000) return `₹${(val / 1000).toFixed(0)}k`;
+    return `₹${val}`;
+  };
 
   // Dynamic Donut center label
   const activeDonutItem = donutHoverSegment
@@ -86,14 +120,21 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ dateFilter }) => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
-            Good morning, Megha
+            Good morning, Megha 👋
           </h1>
           <p className="text-sm text-slate-500 mt-1">
-            Here's a snapshot of your subscription business.
+            Brightloop Software · Billing Operations Dashboard
           </p>
         </div>
 
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => navigate('/calendar')}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white border border-border shadow-xs hover:border-primary text-text-main hover:text-primary transition"
+          >
+            <CalendarDays className="w-3.5 h-3.5 text-primary" />
+            Daily Sales Calendar
+          </button>
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/60">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
             Live Sync • All Systems Nominal
@@ -146,7 +187,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ dateFilter }) => {
           </div>
           <div className="mt-3 flex items-baseline justify-between">
             <span className="text-2xl font-bold tracking-tight text-slate-900 font-mono group-hover:text-emerald-700 transition-colors">
-              ${kpis.mrr.value.toLocaleString()}
+              ₹{kpis.mrr.value.toLocaleString('en-IN')}
             </span>
             <Sparkline data={kpis.mrr.sparkline} color="#10B981" />
           </div>
@@ -175,7 +216,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ dateFilter }) => {
           </div>
           <div className="mt-3 flex items-baseline justify-between">
             <span className="text-2xl font-bold tracking-tight text-slate-900 font-mono group-hover:text-primary transition-colors">
-              ${kpis.revenueCollected.value.toLocaleString()}
+              ₹{kpis.revenueCollected.value.toLocaleString('en-IN')}
             </span>
             <Sparkline data={kpis.revenueCollected.sparkline} color="#6366F1" />
           </div>
@@ -207,7 +248,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ dateFilter }) => {
               <span className="text-2xl font-bold tracking-tight text-slate-900 font-mono group-hover:text-rose-600 transition-colors">
                 {kpis.overdueInvoices.value}
               </span>
-              <span className="text-xs text-slate-400 ml-1.5">(${kpis.overdueInvoices.amount})</span>
+              <span className="text-xs text-slate-400 ml-1.5">(₹{kpis.overdueInvoices.amount.toLocaleString('en-IN')})</span>
             </div>
             <Sparkline data={kpis.overdueInvoices.sparkline} color="#F43F5E" />
           </div>
@@ -227,94 +268,188 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ dateFilter }) => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left (2 cols) — Revenue Overview with 3D Depth Hover Interaction */}
         <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-card flex flex-col justify-between">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
             <div>
-              <h3 className="text-base font-semibold text-slate-900">Revenue Overview</h3>
+              <div className="flex items-center gap-2">
+                <h3 className="text-base font-semibold text-slate-900">Revenue Overview</h3>
+                <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/70">
+                  +{fluctuationPct}% Peak Surge
+                </span>
+              </div>
               <p className="text-xs text-slate-500 mt-0.5">
-                Collected vs. outstanding billed revenue across intervals
+                Billed vs. collected recurring revenue with seasonal fluctuations
               </p>
             </div>
-            <div className="flex items-center gap-4 text-xs font-medium">
-              <div className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded bg-primary" />
-                <span className="text-slate-600">Collected</span>
+
+            <div className="flex flex-wrap items-center gap-3">
+              {/* Local Interval Switcher Pills */}
+              <div className="inline-flex items-center p-1 bg-slate-100 rounded-xl text-xs font-medium">
+                {[
+                  { label: '7D', value: '7 days' },
+                  { label: '30D', value: '30 days' },
+                  { label: '3M', value: '3 months' },
+                  { label: '12M', value: '12 months' },
+                ].map(item => (
+                  <button
+                    key={item.value}
+                    onClick={() => setSelectedInterval(item.value)}
+                    className={`px-2.5 py-1 rounded-lg transition-all ${
+                      selectedInterval === item.value
+                        ? 'bg-white text-primary font-semibold shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
               </div>
-              <div className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded bg-lavender-200" />
-                <span className="text-slate-600">Outstanding</span>
+
+              {/* Legend */}
+              <div className="flex items-center gap-3 text-xs font-medium">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-3 h-3 rounded-sm bg-primary" />
+                  <span className="text-slate-600">Collected</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-3 h-3 rounded-sm bg-indigo-200" />
+                  <span className="text-slate-600">Outstanding</span>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Interactive 3D Bar Chart Display */}
-          <div className="relative pt-6 pb-2 min-h-[280px] flex flex-col justify-end">
-            <div className="h-56 w-full flex items-end justify-between gap-2 sm:gap-4 px-2">
-              {revenueChart.map((bar, idx) => {
-                const total = bar.total || bar.collected + bar.outstanding;
-                const collectedHeightPercent = Math.round((bar.collected / maxBarValue) * 100);
-                const outstandingHeightPercent = Math.round((bar.outstanding / maxBarValue) * 100);
-                const isHovered = hoveredBarIndex === idx;
+          {/* Quick Fluctuation Insights Bar */}
+          <div className="flex flex-wrap items-center gap-2 mb-4 py-2 px-3 bg-slate-50/80 rounded-xl border border-slate-100 text-xs">
+            <span className="text-slate-500 font-medium">Fluctuation Range:</span>
+            <span className="text-slate-700 font-semibold">
+              Lowest {minBar.period} ({formatLakh(minTot)})
+            </span>
+            <span className="text-slate-400">→</span>
+            <span className="text-primary font-bold">
+              Peak {maxBar.period} ({formatLakh(maxTot)})
+            </span>
+            <span className="text-slate-300">|</span>
+            <span className="text-emerald-600 font-medium inline-flex items-center gap-1">
+              <TrendingUp className="w-3.5 h-3.5" />
+              Seasonal &amp; Quarter-End Fluctuations Active
+            </span>
+          </div>
 
-                return (
-                  <div
-                    key={bar.period}
-                    className="flex-1 flex flex-col items-center h-full justify-end relative group cursor-pointer"
-                    onMouseEnter={() => setHoveredBarIndex(idx)}
-                    onMouseLeave={() => setHoveredBarIndex(null)}
-                  >
-                    {/* Floating 3D Tooltip */}
-                    {isHovered && (
-                      <div className="absolute -top-16 z-20 bg-slate-900 text-white text-xs py-1.5 px-3 rounded-xl shadow-lg pointer-events-none whitespace-nowrap animate-in fade-in zoom-in-95 duration-150">
-                        <p className="font-semibold">{bar.period}</p>
-                        <p className="text-slate-300">
-                          Collected: <span className="font-mono font-medium text-emerald-400">${bar.collected.toLocaleString()}</span>
-                        </p>
-                        <p className="text-slate-300">
-                          Outstanding: <span className="font-mono font-medium text-amber-300">${bar.outstanding.toLocaleString()}</span>
-                        </p>
-                        {/* Caret */}
-                        <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-slate-900" />
+          {/* Interactive 3D Bar Chart Display with Real Fluctuation Heights */}
+          <div className="relative pt-2 pb-2 min-h-[300px] flex flex-col justify-end">
+            <div className="flex items-stretch h-64 w-full">
+              {/* Y-Axis scale labels */}
+              <div className="w-12 h-56 flex flex-col justify-between items-end pr-2.5 pb-6 text-[10px] font-mono text-slate-400 select-none">
+                <span>{formatLakh(chartCeiling)}</span>
+                <span>{formatLakh(chartCeiling * 0.75)}</span>
+                <span>{formatLakh(chartCeiling * 0.5)}</span>
+                <span>{formatLakh(chartCeiling * 0.25)}</span>
+                <span>₹0</span>
+              </div>
+
+              {/* Chart Canvas */}
+              <div className="flex-1 relative h-64 flex flex-col justify-end">
+                {/* Background horizontal dashed gridlines */}
+                <div className="absolute inset-x-0 top-0 h-56 flex flex-col justify-between pointer-events-none">
+                  <div className="border-b border-dashed border-slate-200/90 w-full" />
+                  <div className="border-b border-dashed border-slate-200/90 w-full" />
+                  <div className="border-b border-dashed border-slate-200/90 w-full" />
+                  <div className="border-b border-dashed border-slate-200/90 w-full" />
+                  <div className="border-b border-slate-300 w-full" />
+                </div>
+
+                {/* Bars Row */}
+                <div className="h-56 w-full flex items-end justify-between gap-1.5 sm:gap-3 px-1 relative z-10">
+                  {revenueChart.map((bar, idx) => {
+                    const total = bar.total || bar.collected + bar.outstanding;
+                    // Proper bar height relative to ceiling
+                    const barHeightPercent = Math.max(12, Math.min(100, Math.round((total / chartCeiling) * 100)));
+                    const collectedRatio = total > 0 ? (bar.collected / total) * 100 : 85;
+                    const outstandingRatio = total > 0 ? (bar.outstanding / total) * 100 : 15;
+                    const isHovered = hoveredBarIndex === idx;
+
+                    return (
+                      <div
+                        key={bar.period}
+                        className="flex-1 flex flex-col items-center h-full justify-end relative group cursor-pointer select-none"
+                        onMouseEnter={() => setHoveredBarIndex(idx)}
+                        onMouseLeave={() => setHoveredBarIndex(null)}
+                      >
+                        {/* Floating 3D Tooltip */}
+                        {isHovered && (
+                          <div className="absolute -top-28 z-30 bg-slate-900/95 backdrop-blur-md text-white text-xs py-2 px-3.5 rounded-xl shadow-2xl pointer-events-none whitespace-nowrap animate-in fade-in zoom-in-95 duration-150 border border-slate-700/80">
+                            <div className="flex items-center justify-between gap-3 border-b border-slate-700/80 pb-1 mb-1.5">
+                              <span className="font-semibold text-slate-100">{bar.period}</span>
+                              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-primary/30 text-indigo-300 font-bold">
+                                Total ₹{total.toLocaleString('en-IN')}
+                              </span>
+                            </div>
+                            <div className="space-y-1 text-[11px]">
+                              <div className="flex items-center justify-between gap-4">
+                                <span className="text-slate-400">Collected:</span>
+                                <span className="font-mono font-medium text-emerald-400">
+                                  ₹{bar.collected.toLocaleString('en-IN')}
+                                </span>
+                              </div>
+                              <div className="flex items-center justify-between gap-4">
+                                <span className="text-slate-400">Outstanding:</span>
+                                <span className="font-mono font-medium text-amber-300">
+                                  ₹{bar.outstanding.toLocaleString('en-IN')}
+                                </span>
+                              </div>
+                              <div className="flex items-center justify-between gap-4 pt-1 text-[10px] text-slate-400 border-t border-slate-800">
+                                <span>Collection Efficiency:</span>
+                                <span className="font-semibold text-emerald-300">
+                                  {total > 0 ? ((bar.collected / total) * 100).toFixed(1) : 0}%
+                                </span>
+                              </div>
+                            </div>
+                            {/* Caret */}
+                            <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-slate-900" />
+                          </div>
+                        )}
+
+                        {/* Dedicated Bar Height Track */}
+                        <div className="w-full h-56 flex items-end justify-center relative">
+                          <div
+                            style={{ height: `${barHeightPercent}%` }}
+                            className={`w-full max-w-[36px] flex flex-col justify-end rounded-t-xl overflow-hidden transition-all duration-300 ease-out ${
+                              isHovered
+                                ? '-translate-y-2 shadow-xl shadow-primary/30 ring-2 ring-primary brightness-110'
+                                : 'hover:brightness-95'
+                            }`}
+                          >
+                            {/* Top Highlight on active bar */}
+                            {isHovered && (
+                              <div className="w-full h-1 bg-white/80 animate-pulse" />
+                            )}
+                            {/* Outstanding segment (top) */}
+                            <div
+                              style={{ height: `${outstandingRatio}%` }}
+                              className="w-full bg-indigo-200 transition-all duration-300 min-h-[4px]"
+                            />
+                            {/* Collected segment (bottom) */}
+                            <div
+                              style={{ height: `${collectedRatio}%` }}
+                              className="w-full bg-primary transition-all duration-300 min-h-[8px]"
+                            />
+                          </div>
+                        </div>
+
+                        {/* X-axis Label */}
+                        <span
+                          className={`text-[11px] mt-2 font-medium transition-colors duration-150 ${
+                            isHovered ? 'text-primary font-bold scale-105' : 'text-slate-500'
+                          }`}
+                        >
+                          {bar.period}
+                        </span>
                       </div>
-                    )}
-
-                    {/* Stacked Bar with subtle 3D hover lift */}
-                    <div
-                      className={`w-full max-w-[42px] flex flex-col justify-end rounded-t-lg overflow-hidden transition-all duration-200 ease-out ${
-                        isHovered
-                          ? '-translate-y-1.5 shadow-md shadow-primary/20 ring-2 ring-primary/40'
-                          : 'hover:brightness-95'
-                      }`}
-                    >
-                      {/* Top Highlight on active bar */}
-                      {isHovered && (
-                        <div className="w-full h-1 bg-white/70 animate-pulse" />
-                      )}
-                      {/* Outstanding segment */}
-                      <div
-                        style={{ height: `${outstandingHeightPercent}%` }}
-                        className="w-full bg-lavender-200 transition-all duration-300 min-h-[4px]"
-                      />
-                      {/* Collected segment */}
-                      <div
-                        style={{ height: `${collectedHeightPercent}%` }}
-                        className="w-full bg-primary transition-all duration-300 min-h-[6px]"
-                      />
-                    </div>
-
-                    {/* X-axis Label */}
-                    <span
-                      className={`text-[11px] mt-2 transition-colors duration-150 ${
-                        isHovered ? 'text-primary font-semibold' : 'text-slate-400'
-                      }`}
-                    >
-                      {bar.period}
-                    </span>
-                  </div>
-                );
-              })}
+                    );
+                  })}
+                </div>
+              </div>
             </div>
-            {/* Subtle horizontal grid lines */}
-            <div className="border-t border-slate-100 w-full mt-2" />
           </div>
         </div>
 
@@ -472,7 +607,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ dateFilter }) => {
 
                 <div className="flex items-center gap-3 shrink-0">
                   <span className="text-sm font-semibold text-slate-900 font-mono">
-                    ${inv.total.toFixed(2)}
+                    ₹{inv.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                   </span>
                   <StatusBadge status={inv.status} size="sm" />
                 </div>
@@ -522,7 +657,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ dateFilter }) => {
                 <div className="flex items-center gap-3 shrink-0 text-right">
                   <div>
                     <p className="text-sm font-semibold text-slate-900 font-mono">
-                      ${renewal.amount.toFixed(2)}
+                      ₹{renewal.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                     </p>
                     <p className="text-[11px] text-slate-400 flex items-center justify-end gap-1 mt-0.5">
                       <Clock className="w-3 h-3 text-slate-400" />

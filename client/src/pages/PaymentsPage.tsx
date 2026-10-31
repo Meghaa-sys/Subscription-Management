@@ -53,7 +53,7 @@ export const PaymentsPage: React.FC = () => {
         paymentMethod,
         amount: targetInvoice?.total,
       });
-      success('Payment Recorded', `Successfully reconciled $${res.payment.amount} for ${res.invoice.invoiceNumber}.`);
+      success('Payment Recorded', `Successfully reconciled ₹${res.payment.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })} for ${res.invoice.invoiceNumber}.`);
       setIsRecordModalOpen(false);
       loadData();
     } catch (err: any) {
@@ -147,7 +147,7 @@ export const PaymentsPage: React.FC = () => {
                       {pay.invoiceNumber}
                     </td>
                     <td className="py-3.5 px-6 font-mono font-bold text-slate-900">
-                      ${pay.amount.toFixed(2)}
+                      ₹{pay.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                     </td>
                     <td className="py-3.5 px-6 text-xs text-slate-600 capitalize">
                       {pay.paymentMethod.replace(/_/g, ' ')}
@@ -201,7 +201,7 @@ export const PaymentsPage: React.FC = () => {
                   >
                     {invoices.map(inv => (
                       <option key={inv.id} value={inv.id}>
-                        {inv.invoiceNumber} - {inv.customerName} (${inv.total.toFixed(2)})
+                        {inv.invoiceNumber} - {inv.customerName} (₹{inv.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })})
                       </option>
                     ))}
                   </select>
@@ -216,9 +216,10 @@ export const PaymentsPage: React.FC = () => {
                     onChange={e => setPaymentMethod(e.target.value)}
                     className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden"
                   >
-                    <option value="credit_card">Credit Card (Stripe)</option>
-                    <option value="bank_transfer">ACH Direct Transfer</option>
-                    <option value="wire">Bank Wire Settlement</option>
+                    <option value="upi">UPI AutoPay / e-Mandate (NPCI)</option>
+                    <option value="bank_transfer">HDFC Corporate NetBanking (NEFT/RTGS)</option>
+                    <option value="credit_card">Corporate RuPay / Visa Business Card</option>
+                    <option value="wire">Corporate RTGS Settlement</option>
                   </select>
                 </div>
 

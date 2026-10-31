@@ -156,6 +156,7 @@ export const SettingsPage: React.FC = () => {
                 onChange={e => setSettings({ ...settings, currency: e.target.value })}
                 className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden"
               >
+                <option value="INR">INR (₹ - Indian Rupee)</option>
                 <option value="USD">USD ($ - United States Dollar)</option>
                 <option value="EUR">EUR (€ - Euro)</option>
                 <option value="GBP">GBP (£ - British Pound)</option>

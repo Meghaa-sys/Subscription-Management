@@ -97,7 +97,7 @@ export const DiscountsPage: React.FC = () => {
 
               <h3 className="text-base font-bold text-slate-900 mt-2">{disc.name}</h3>
               <p className="text-2xl font-black font-mono text-slate-900 mt-3">
-                {disc.type === 'percentage' ? `${disc.value}% OFF` : `$${disc.value} OFF`}
+                {disc.type === 'percentage' ? `${disc.value}% OFF` : `₹${disc.value.toLocaleString('en-IN')} OFF`}
               </p>
             </div>
 
@@ -161,7 +161,7 @@ export const DiscountsPage: React.FC = () => {
                     className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden"
                   >
                     <option value="percentage">Percentage (%)</option>
-                    <option value="fixed">Fixed Amount ($)</option>
+                    <option value="fixed">Fixed Amount (₹)</option>
                   </select>
                 </div>
                 <div>
