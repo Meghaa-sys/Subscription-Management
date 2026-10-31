@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-# PS : Subscription-Management
 # SubscriptIQ — Unified Subscription Management System
 
 **Automate subscriptions. Simplify billing. Gain complete revenue visibility.**
@@ -66,6 +64,16 @@ Security includes unique email addresses, password validation, email-based passw
 Password requirements include more than eight characters, at least one uppercase letter, one lowercase letter, and one special character.
 
 Only administrators can create new staff accounts.
+
+#### Demo Credentials
+
+Pre-configured demo logins available after running `python manage.py seed`:
+
+| Role | Email | Password | Scope / Permissions |
+| :--- | :--- | :--- | :--- |
+| **Administrator** | `admin@brightloop.test` | `Admin@12345!` | Full administration, products, plans, taxes, discounts, staff accounts, revenue reporting |
+| **Staff** | `staff1@brightloop.test`<br>`staff2@brightloop.test` | `Staff@12345!` | Customer management, quotations, subscription lifecycle, invoices, and payments |
+| **Customer** | `customer1@brightloop.test` *(and up)* | `Customer@12345!` | Self-service portal: personal subscriptions, invoices, and payment tracking |
 
 ### 4.2 Product and Variant Management
 
@@ -483,8 +491,8 @@ By connecting products, plans, quotations, subscriptions, invoices, payments, an
 
 **One platform. One source of truth. Every subscription accounted for.**
 
+---
 
-=======
 # SubscriptIQ — Enterprise SaaS Subscription & Billing Platform
 
 SubscriptIQ is a production-quality subscription management and billing automation platform built for **Brightloop Software**, designed following the minimalist aesthetic of Stripe, Linear, and Vercel.
@@ -561,4 +569,15 @@ npm run dev
 ```
 
 Visit **http://localhost:5173/** in your browser.
->>>>>>> 0efe7e7 (feat: complete SubscriptIQ platform with PostgreSQL schema and full interactive React frontend)
+
+---
+
+## 🔐 Demo Credentials
+
+When running the platform with seeded demo data (`python manage.py seed` in `backend/`):
+
+| Role | Email | Password | Description / Permissions |
+| :--- | :--- | :--- | :--- |
+| **Administrator** | `admin@brightloop.test` | `Admin@12345!` | Full administrative access: products, plans, taxes, discounts, staff accounts, system settings, and analytics. |
+| **Staff** | `staff1@brightloop.test`<br>`staff2@brightloop.test` | `Staff@12345!` | Operational access: customers, quotations, subscriptions, invoice creation/sending, and payment recording. |
+| **Customer** | `customer1@brightloop.test` *(and up)* | `Customer@12345!` | Self-service customer portal: personal subscription details, billing history, and invoice access. |
