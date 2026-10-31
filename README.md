@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # PS : Subscription-Management
 # SubscriptIQ — Unified Subscription Management System
 
@@ -483,3 +484,81 @@ By connecting products, plans, quotations, subscriptions, invoices, payments, an
 **One platform. One source of truth. Every subscription accounted for.**
 
 
+=======
+# SubscriptIQ — Enterprise SaaS Subscription & Billing Platform
+
+SubscriptIQ is a production-quality subscription management and billing automation platform built for **Brightloop Software**, designed following the minimalist aesthetic of Stripe, Linear, and Vercel.
+
+![SubscriptIQ Dashboard](https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&auto=format&fit=crop&q=80)
+
+---
+
+## 🚀 Features
+
+- **Dashboard**:
+  - Live revenue telemetry with 4 interactive KPI cards (Active Subscriptions, MRR, Revenue Collected, Overdue Invoices) featuring SVG sparklines and 3D hover elevations.
+  - Interactive Revenue Overview bar chart (7 days, 30 days, 3 months, 12 months) with depth transforms, top highlights, and floating figures.
+  - Dynamic Subscription Status Donut Chart with live segment emphasis and central tally feedback.
+  - Recent Invoices and Upcoming Renewals operational feeds.
+- **Spotlight Search (`⌘K` / `Ctrl+K`)**: Unified real-time search across customers, subscriptions, and invoices.
+- **Customers**: Comprehensive client directory, search, filter, status toggles, and detailed slide-over customer profiles.
+- **Products & Plans**: Modular capability tiers, flat vs. seat-based billing ($/seat), monthly and annual cadences.
+- **Quotations**: Proposal generation with discount codes and tax calculations, plus **one-click "Accept & Convert"** to active subscriptions and generated invoices.
+- **Subscriptions**: Real-time contract lifecycle tracking with **Pause**, **Resume**, and **Cancel** controls.
+- **Invoices**: Line items, tax/discount breakdowns, and a **formal printable invoice view** with company letterhead.
+- **Payments**: Reconciliation engine with idempotency guards preventing duplicate payment processing.
+- **Discounts & Taxes**: Promotional codes, redemption limits, and regional tax rules (US Sales Tax, EU VAT, Canadian GST).
+- **Reports**: MRR/ARR velocity cohorts, Net Retention Rate (118.4%), Gross Churn (0.6%), and 30-day renewal forecasting.
+- **Users & Settings**: Role-Based Access Control (Admin, Finance Staff, Support Staff) and configurable billing defaults.
+- **Billing Automation Engine**: Background runner (`POST /api/billing/run-scheduled-cycle`) that automatically checks period maturation, issues renewal invoices, and flags overdue balances.
+
+---
+
+## 🛠️ Tech Stack & Architecture
+
+- **Frontend**: React 19, TypeScript, Vite, Tailwind CSS, Lucide Icons, Recharts, React Router
+- **Backend**: Node.js, Express.js REST API
+- **Database**: PostgreSQL DDL Schema (`server/schema.sql`) with `pg` (node-postgres) connection pool
+- **Design Tokens**: Lavender-Indigo palette (`#F8F9FD`, `#5145E5`, `#EEEBFF`, `#111827`, `#64748B`, `#E5E7EB`)
+
+---
+
+## 📦 Getting Started
+
+### 1. Clone & Install Dependencies
+
+```bash
+git clone https://github.com/Meghaa-sys/Subscription-Management.git
+cd Subscription-Management
+
+# Install root, backend, and frontend packages
+npm install
+npm --prefix server install
+npm --prefix client install
+```
+
+### 2. Configure PostgreSQL (Optional)
+
+Configure your PostgreSQL database URL in `server/.env` (or copy from `server/.env.example`):
+
+```env
+DATABASE_URL=postgres://postgres:postgres@localhost:5432/subscriptiq
+```
+
+Execute the PostgreSQL schema:
+
+```bash
+psql -d subscriptiq -f server/schema.sql
+```
+
+*(Note: The server includes an automatic persistence fallback engine so the application runs completely out-of-the-box even before a local PostgreSQL daemon is configured).*
+
+### 3. Run Development Servers
+
+```bash
+# Concurrently starts Express API (Port 5000) and Vite Frontend (Port 5173)
+npm run dev
+```
+
+Visit **http://localhost:5173/** in your browser.
+>>>>>>> 0efe7e7 (feat: complete SubscriptIQ platform with PostgreSQL schema and full interactive React frontend)

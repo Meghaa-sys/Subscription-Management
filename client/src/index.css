@@ -1,0 +1,100 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color-scheme: light;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #F8F9FD;
+  color: #111827;
+  overflow-x: hidden;
+}
+
+/* Custom sleek scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+/* Subtle 3D Bar Chart Lift effect */
+.chart-bar-3d {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), filter 0.25s ease;
+  transform-origin: bottom center;
+}
+.chart-bar-3d:hover {
+  transform: translateY(-4px) scaleY(1.015);
+  filter: drop-shadow(0 6px 12px rgba(81, 69, 229, 0.25));
+}
+
+/* Card hover lift */
+.card-hover-lift {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
+}
+.card-hover-lift:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px -6px rgba(81, 69, 229, 0.1), 0 6px 14px -4px rgba(0, 0, 0, 0.04);
+}
+
+/* Hover-to-Brighten Theme Card Effect */
+.card-theme-brighten {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease, background 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+.card-theme-brighten:hover,
+.card-theme-brighten.is-brightened {
+  border-color: #5145E5 !important;
+  background: linear-gradient(180deg, #FFFFFF 0%, #FAF9FF 50%, #F1EEFF 100%) !important;
+  box-shadow: 0 0 0 2px rgba(81, 69, 229, 0.85), 0 16px 40px -6px rgba(81, 69, 229, 0.28), 0 4px 14px -2px rgba(81, 69, 229, 0.12) !important;
+  transform: translateY(-4px);
+}
+
+/* Side panel glowing pulse */
+@keyframes ambientGlow {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(81, 69, 229, 0.15);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(81, 69, 229, 0.3);
+  }
+}
+
+.ambient-pulse {
+  animation: ambientGlow 3s infinite ease-in-out;
+}
+
+/* Subtle ripple on click */
+.btn-interaction {
+  transition: transform 0.12s ease, filter 0.15s ease, box-shadow 0.15s ease;
+}
+.btn-interaction:active {
+  transform: scale(0.97);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
