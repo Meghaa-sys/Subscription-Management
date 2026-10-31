@@ -21,6 +21,12 @@ let usePg = false;
 
 if (process.env.DATABASE_URL || process.env.PGHOST) {
   try {
+    const isCloudDb = process.env.DATABASE_URL?.includes('neon.tech') || 
+                      process.env.DATABASE_URL?.includes('sslmode=require') || 
+                      process.env.DATABASE_URL?.includes('amazonaws.com') ||
+                      process.env.DATABASE_URL?.includes('supabase.co') ||
+                      Boolean(process.env.DATABASE_URL && !process.env.DATABASE_URL.includes('localhost'));
+
     pgPool = new Pool({
       connectionString: process.env.DATABASE_URL || undefined,
       host: process.env.PGHOST || 'localhost',
@@ -28,12 +34,22 @@ if (process.env.DATABASE_URL || process.env.PGHOST) {
       database: process.env.PGDATABASE || 'brightloop',
       user: process.env.PGUSER || 'postgres',
       password: process.env.PGPASSWORD || 'postgres',
-      ssl: process.env.DATABASE_URL?.includes('sslmode=require') ? { rejectUnauthorized: false } : false,
-      connectionTimeoutMillis: 3000,
+      ssl: isCloudDb ? { rejectUnauthorized: false } : false,
+      connectionTimeoutMillis: 5000,
     });
-    console.log('Configured PostgreSQL Pool connection');
+
+    pgPool.query('SELECT current_database(), current_user')
+      .then(res => {
+        const dbName = res.rows[0].current_database;
+        const dbUser = res.rows[0].current_user;
+        const isNeon = process.env.DATABASE_URL?.includes('neon.tech');
+        console.log(`✅ [PostgreSQL${isNeon ? ' (Neon)' : ''}] Connected to database: "${dbName}" as user: "${dbUser}"`);
+      })
+      .catch(err => {
+        console.warn(`⚠️ [PostgreSQL] Pool initialized, but ping failed (${err.message}). Using local store as fallback.`);
+      });
   } catch (err) {
-    console.warn('PostgreSQL configuration error:', err.message);
+    console.warn('⚠️ PostgreSQL configuration error:', err.message);
   }
 }
 

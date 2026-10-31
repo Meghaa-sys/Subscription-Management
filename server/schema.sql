@@ -1,7 +1,7 @@
 -- =============================================================================
--- SubscriptIQ PostgreSQL Production Database Schema
--- Multi-tenant SaaS Subscription & Billing Management
--- Platform: Brightloop Software
+-- Brightloop Software PostgreSQL Production Database Schema
+-- Multi-tenant SaaS Subscription & Recurring Billing Management
+-- Platform: Brightloop Software (India & Global)
 -- =============================================================================
 
 -- Enable UUID extension
@@ -10,16 +10,16 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- 1. SYSTEM SETTINGS TABLE
 CREATE TABLE IF NOT EXISTS system_settings (
     id VARCHAR(50) PRIMARY KEY DEFAULT 'global_settings',
-    company_name VARCHAR(255) NOT NULL DEFAULT 'Brightloop Software',
-    legal_name VARCHAR(255) NOT NULL DEFAULT 'Brightloop Technologies Inc.',
-    support_email VARCHAR(255) NOT NULL DEFAULT 'billing@brightloop.io',
-    contact_phone VARCHAR(50) DEFAULT '+1 (555) 382-9011',
-    currency VARCHAR(10) NOT NULL DEFAULT 'USD',
-    currency_symbol VARCHAR(5) NOT NULL DEFAULT '$',
-    timezone VARCHAR(100) NOT NULL DEFAULT 'America/New_York (UTC-5)',
-    tax_id VARCHAR(100) DEFAULT 'US-892401928',
-    address TEXT DEFAULT '548 Market St, Suite 32900, San Francisco, CA 94104',
-    invoice_prefix VARCHAR(50) NOT NULL DEFAULT 'INV-2026-',
+    company_name VARCHAR(255) NOT NULL DEFAULT 'Brightloop Technologies India Pvt. Ltd.',
+    legal_name VARCHAR(255) NOT NULL DEFAULT 'Brightloop Software India Private Limited',
+    support_email VARCHAR(255) NOT NULL DEFAULT 'billing@brightloop.in',
+    contact_phone VARCHAR(50) DEFAULT '+91 (080) 4920-8800',
+    currency VARCHAR(10) NOT NULL DEFAULT 'INR',
+    currency_symbol VARCHAR(5) NOT NULL DEFAULT '₹',
+    timezone VARCHAR(100) NOT NULL DEFAULT 'Asia/Kolkata (IST, UTC+5:30)',
+    tax_id VARCHAR(100) DEFAULT 'GSTIN: 29AABCB8924F1Z5',
+    address TEXT DEFAULT 'Tower B, 7th Floor, Embassy TechVillage, Outer Ring Road, Devarabeesanahalli, Bengaluru, Karnataka 560103',
+    invoice_prefix VARCHAR(50) NOT NULL DEFAULT 'INV-2026-IN-',
     payment_terms_days INTEGER NOT NULL DEFAULT 14,
     grace_period_days INTEGER NOT NULL DEFAULT 7,
     auto_renew_default BOOLEAN NOT NULL DEFAULT true,
@@ -74,7 +74,7 @@ CREATE TABLE IF NOT EXISTS plans (
     name VARCHAR(255) NOT NULL,
     billing_interval VARCHAR(20) NOT NULL CHECK (billing_interval IN ('monthly', 'annual')),
     price NUMERIC(12, 2) NOT NULL,
-    currency VARCHAR(10) NOT NULL DEFAULT 'USD',
+    currency VARCHAR(10) NOT NULL DEFAULT 'INR',
     seat_based BOOLEAN NOT NULL DEFAULT false,
     price_per_seat NUMERIC(12, 2) NOT NULL DEFAULT 0.00,
     active_subscribers INTEGER NOT NULL DEFAULT 0,
@@ -142,7 +142,7 @@ CREATE TABLE IF NOT EXISTS payments (
     invoice_id VARCHAR(50) NOT NULL REFERENCES invoices(id) ON DELETE CASCADE,
     customer_id VARCHAR(50) NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
     amount NUMERIC(12, 2) NOT NULL,
-    currency VARCHAR(10) NOT NULL DEFAULT 'USD',
+    currency VARCHAR(10) NOT NULL DEFAULT 'INR',
     payment_method VARCHAR(50) NOT NULL CHECK (payment_method IN ('credit_card', 'bank_transfer', 'wire', 'stripe')),
     status VARCHAR(20) NOT NULL DEFAULT 'successful' CHECK (status IN ('successful', 'pending', 'failed')),
     failure_reason TEXT,
@@ -187,7 +187,7 @@ CREATE TABLE IF NOT EXISTS discounts (
     name VARCHAR(255) NOT NULL,
     type VARCHAR(20) NOT NULL CHECK (type IN ('percentage', 'fixed')),
     value NUMERIC(12, 2) NOT NULL,
-    currency VARCHAR(10) NOT NULL DEFAULT 'USD',
+    currency VARCHAR(10) NOT NULL DEFAULT 'INR',
     valid_until DATE NOT NULL,
     usage_limit INTEGER NOT NULL DEFAULT 100,
     used_count INTEGER NOT NULL DEFAULT 0,
@@ -200,7 +200,7 @@ CREATE TABLE IF NOT EXISTS taxes (
     id VARCHAR(50) PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     rate NUMERIC(6, 2) NOT NULL,
-    country VARCHAR(100) NOT NULL DEFAULT 'United States',
+    country VARCHAR(100) NOT NULL DEFAULT 'India',
     region VARCHAR(100) DEFAULT 'Default',
     tax_type VARCHAR(20) NOT NULL DEFAULT 'exclusive' CHECK (tax_type IN ('inclusive', 'exclusive')),
     status VARCHAR(20) NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'inactive')),
