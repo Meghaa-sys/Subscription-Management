@@ -1,21 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  TrendingUp,
-  TrendingDown,
-  ArrowRight,
   Repeat,
   DollarSign,
   AlertCircle,
   Clock,
   ChevronRight,
-  Layers,
   Sparkles,
 } from 'lucide-react';
-import { api } from '../api/client';
+import { api, formatMoney } from '../api/client';
 import { DashboardStats } from '../types';
-import { Sparkline } from '../components/Sparkline';
 import { StatusBadge } from '../components/StatusBadge';
+import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 
 interface DashboardPageProps {
@@ -27,10 +23,9 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ dateFilter }) => {
   const [loading, setLoading] = useState(true);
   const [hoveredBarIndex, setHoveredBarIndex] = useState<number | null>(null);
   const [donutHoverSegment, setDonutHoverSegment] = useState<string | null>(null);
-  const [productFilter, setProductFilter] = useState('all');
-  const [brightenedKpi, setBrightenedKpi] = useState<string | null>('mrr');
 
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { error } = useToast();
 
   const loadStats = async () => {
@@ -73,7 +68,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ dateFilter }) => {
   const { kpis, revenueChart, subscriptionDonut, recentInvoices, upcomingRenewals } = stats;
 
   // Max value for revenue bar chart scaling
-  const maxBarValue = Math.max(...revenueChart.map(d => d.total || (d.collected + d.outstanding)), 1);
+  const maxBarValue = Math.max(...revenueChart.map(d => d.collected), 1);
 
   // Dynamic Donut center label
   const activeDonutItem = donutHoverSegment
@@ -86,18 +81,11 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ dateFilter }) => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
-            Good morning, Megha
+            Welcome back, {user?.name}
           </h1>
           <p className="text-sm text-slate-500 mt-1">
             Here's a snapshot of your subscription business.
           </p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/60">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            Live Sync • All Systems Nominal
-          </span>
         </div>
       </div>
 
@@ -119,13 +107,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ dateFilter }) => {
             <span className="text-2xl font-bold tracking-tight text-slate-900 font-mono group-hover:text-primary transition-colors">
               {kpis.activeSubscriptions.value.toLocaleString()}
             </span>
-            <Sparkline data={kpis.activeSubscriptions.sparkline} color="#5145E5" />
           </div>
-          <div className="mt-3 flex items-center justify-between text-xs">
-            <span className="inline-flex items-center gap-0.5 text-emerald-600 font-semibold">
-              <TrendingUp className="w-3.5 h-3.5" />
-              +{kpis.activeSubscriptions.changePercent}%
-            </span>
+          <div className="mt-3 flex items-center justify-end text-xs">
             <span className="text-[11px] text-primary group-hover:underline font-medium">
               View list →
             </span>
@@ -146,15 +129,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ dateFilter }) => {
           </div>
           <div className="mt-3 flex items-baseline justify-between">
             <span className="text-2xl font-bold tracking-tight text-slate-900 font-mono group-hover:text-emerald-700 transition-colors">
-              ${kpis.mrr.value.toLocaleString()}
+              ${formatMoney(kpis.mrr.value)}
             </span>
-            <Sparkline data={kpis.mrr.sparkline} color="#10B981" />
           </div>
-          <div className="mt-3 flex items-center justify-between text-xs">
-            <span className="inline-flex items-center gap-0.5 text-emerald-600 font-semibold">
-              <TrendingUp className="w-3.5 h-3.5" />
-              +{kpis.mrr.changePercent}%
-            </span>
+          <div className="mt-3 flex items-center justify-end text-xs">
             <span className="text-[11px] text-primary group-hover:underline font-medium">
               Analytics →
             </span>
@@ -175,15 +153,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ dateFilter }) => {
           </div>
           <div className="mt-3 flex items-baseline justify-between">
             <span className="text-2xl font-bold tracking-tight text-slate-900 font-mono group-hover:text-primary transition-colors">
-              ${kpis.revenueCollected.value.toLocaleString()}
+              ${formatMoney(kpis.revenueCollected.value)}
             </span>
-            <Sparkline data={kpis.revenueCollected.sparkline} color="#6366F1" />
           </div>
-          <div className="mt-3 flex items-center justify-between text-xs">
-            <span className="inline-flex items-center gap-0.5 text-emerald-600 font-semibold">
-              <TrendingUp className="w-3.5 h-3.5" />
-              +{kpis.revenueCollected.changePercent}%
-            </span>
+          <div className="mt-3 flex items-center justify-end text-xs">
             <span className="text-[11px] text-primary group-hover:underline font-medium">
               Ledger →
             </span>
@@ -207,15 +180,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ dateFilter }) => {
               <span className="text-2xl font-bold tracking-tight text-slate-900 font-mono group-hover:text-rose-600 transition-colors">
                 {kpis.overdueInvoices.value}
               </span>
-              <span className="text-xs text-slate-400 ml-1.5">(${kpis.overdueInvoices.amount})</span>
+              <span className="text-xs text-slate-400 ml-1.5">(${formatMoney(kpis.overdueInvoices.amount)})</span>
             </div>
-            <Sparkline data={kpis.overdueInvoices.sparkline} color="#F43F5E" />
           </div>
-          <div className="mt-3 flex items-center justify-between text-xs">
-            <span className="inline-flex items-center gap-0.5 text-emerald-600 font-semibold">
-              <TrendingDown className="w-3.5 h-3.5" />
-              {kpis.overdueInvoices.changePercent}%
-            </span>
+          <div className="mt-3 flex items-center justify-end text-xs">
             <span className="text-[11px] text-primary group-hover:underline font-medium">
               Resolve →
             </span>
@@ -231,18 +199,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ dateFilter }) => {
             <div>
               <h3 className="text-base font-semibold text-slate-900">Revenue Overview</h3>
               <p className="text-xs text-slate-500 mt-0.5">
-                Collected vs. outstanding billed revenue across intervals
+                Payments collected per month in the selected period
               </p>
-            </div>
-            <div className="flex items-center gap-4 text-xs font-medium">
-              <div className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded bg-primary" />
-                <span className="text-slate-600">Collected</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded bg-lavender-200" />
-                <span className="text-slate-600">Outstanding</span>
-              </div>
             </div>
           </div>
 
@@ -250,9 +208,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ dateFilter }) => {
           <div className="relative pt-6 pb-2 min-h-[280px] flex flex-col justify-end">
             <div className="h-56 w-full flex items-end justify-between gap-2 sm:gap-4 px-2">
               {revenueChart.map((bar, idx) => {
-                const total = bar.total || bar.collected + bar.outstanding;
                 const collectedHeightPercent = Math.round((bar.collected / maxBarValue) * 100);
-                const outstandingHeightPercent = Math.round((bar.outstanding / maxBarValue) * 100);
                 const isHovered = hoveredBarIndex === idx;
 
                 return (
@@ -267,10 +223,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ dateFilter }) => {
                       <div className="absolute -top-16 z-20 bg-slate-900 text-white text-xs py-1.5 px-3 rounded-xl shadow-lg pointer-events-none whitespace-nowrap animate-in fade-in zoom-in-95 duration-150">
                         <p className="font-semibold">{bar.period}</p>
                         <p className="text-slate-300">
-                          Collected: <span className="font-mono font-medium text-emerald-400">${bar.collected.toLocaleString()}</span>
-                        </p>
-                        <p className="text-slate-300">
-                          Outstanding: <span className="font-mono font-medium text-amber-300">${bar.outstanding.toLocaleString()}</span>
+                          Collected: <span className="font-mono font-medium text-emerald-400">${formatMoney(bar.collected)}</span>
                         </p>
                         {/* Caret */}
                         <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-slate-900" />
@@ -279,6 +232,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ dateFilter }) => {
 
                     {/* Stacked Bar with subtle 3D hover lift */}
                     <div
+                      style={{ height: `${collectedHeightPercent}%` }}
                       className={`w-full max-w-[42px] flex flex-col justify-end rounded-t-lg overflow-hidden transition-all duration-200 ease-out ${
                         isHovered
                           ? '-translate-y-1.5 shadow-md shadow-primary/20 ring-2 ring-primary/40'
@@ -289,16 +243,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ dateFilter }) => {
                       {isHovered && (
                         <div className="w-full h-1 bg-white/70 animate-pulse" />
                       )}
-                      {/* Outstanding segment */}
-                      <div
-                        style={{ height: `${outstandingHeightPercent}%` }}
-                        className="w-full bg-lavender-200 transition-all duration-300 min-h-[4px]"
-                      />
-                      {/* Collected segment */}
-                      <div
-                        style={{ height: `${collectedHeightPercent}%` }}
-                        className="w-full bg-primary transition-all duration-300 min-h-[6px]"
-                      />
+                      <div className="w-full h-full bg-primary transition-all duration-300 min-h-[6px]" />
                     </div>
 
                     {/* X-axis Label */}
@@ -325,16 +270,6 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ dateFilter }) => {
               <h3 className="text-base font-semibold text-slate-900">Subscription Status</h3>
               <p className="text-xs text-slate-500 mt-0.5">Lifecycle distribution</p>
             </div>
-            {/* Filter Dropdown */}
-            <select
-              value={productFilter}
-              onChange={e => setProductFilter(e.target.value)}
-              className="text-xs bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 text-slate-700 focus:outline-hidden"
-            >
-              <option value="all">All Products</option>
-              <option value="engine">Engine Only</option>
-              <option value="analytics">Analytics Suite</option>
-            </select>
           </div>
 
           {/* Donut Chart Visual Representation */}
@@ -485,8 +420,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ dateFilter }) => {
         <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-card">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="text-base font-semibold text-slate-900">Upcoming Renewals</h3>
-              <p className="text-xs text-slate-500 mt-0.5">Subscriptions maturing in next cycle</p>
+              <h3 className="text-base font-semibold text-slate-900">Upcoming Billing</h3>
+              <p className="text-xs text-slate-500 mt-0.5">Active subscriptions next due for an invoice</p>
             </div>
             <button
               onClick={() => navigate('/subscriptions')}
@@ -505,8 +440,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ dateFilter }) => {
               >
                 <div className="flex items-center gap-3">
                   <img
-                    src={renewal.customerAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80'}
-                    alt={renewal.customerName}
+                    src={renewal.customerAvatar}
+                    alt=""
                     className="w-9 h-9 rounded-full object-cover border border-slate-200 shrink-0"
                   />
                   <div>
@@ -527,9 +462,11 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ dateFilter }) => {
                     <p className="text-[11px] text-slate-400 flex items-center justify-end gap-1 mt-0.5">
                       <Clock className="w-3 h-3 text-slate-400" />
                       {renewal.daysRemaining > 0 ? (
-                        <span>in {renewal.daysRemaining} days</span>
+                        <span>in {renewal.daysRemaining} {renewal.daysRemaining === 1 ? 'day' : 'days'}</span>
+                      ) : renewal.daysRemaining === 0 ? (
+                        <span>today</span>
                       ) : (
-                        <span className="text-rose-500 font-semibold">Overdue ({Math.abs(renewal.daysRemaining)}d)</span>
+                        <span className="text-rose-500 font-semibold">{Math.abs(renewal.daysRemaining)}d behind</span>
                       )}
                     </p>
                   </div>

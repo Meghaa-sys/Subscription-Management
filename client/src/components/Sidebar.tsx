@@ -17,13 +17,9 @@ import {
   ChevronLeft,
   ChevronRight,
   Zap,
-  TrendingUp,
-  Server,
-  Check,
-  Sparkles,
-  ChevronDown,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { api } from '../api/client';
 
@@ -46,7 +42,7 @@ const navItems = [
   { to: '/discounts', label: 'Discounts', icon: Percent },
   { to: '/taxes', label: 'Taxes', icon: Receipt },
   { to: '/reports', label: 'Reports', icon: BarChart3 },
-  { to: '/users', label: 'Users', icon: UserCheck },
+  { to: '/users', label: 'Users', icon: UserCheck, adminOnly: true },
   { to: '/settings', label: 'Settings', icon: Settings },
 ];
 
@@ -56,20 +52,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
   mobileOpen,
   setMobileOpen,
 }) => {
+  const { isAdmin } = useAuth();
   const { success, error } = useToast();
   const [runningCycle, setRunningCycle] = useState(false);
-  const [isWidgetBrightened, setIsWidgetBrightened] = useState(false);
-  const [isEnvMenuOpen, setIsEnvMenuOpen] = useState(false);
-  const [currentEnv, setCurrentEnv] = useState('Production US-East');
-
-  const envs = [
-    { name: 'Production US-East', ping: '12ms', status: 'live' },
-    { name: 'EU-Frankfurt Cluster', ping: '28ms', status: 'live' },
-    { name: 'Staging Environment', ping: '16ms', status: 'ready' },
-  ];
 
   const handleRunCycle = async (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (!window.confirm('Bill every subscription due today? This creates real invoices in the shared database.')) return;
     try {
       setRunningCycle(true);
       const res = await api.runBillingCycle();
@@ -83,8 +72,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
       });
 
       success(
-        'Billing Cycle Complete',
-        `${res.renewalsProcessed} renewals invoiced, ${res.invoicesMarkedOverdue} overdue status checked.`
+        'Billing Run Complete',
+        `${res.created} invoices created, ${res.skipped} already billed, ${res.failed} failed.`
       );
       window.dispatchEvent(new Event('billing-cycle-complete'));
     } catch (e: any) {
@@ -115,58 +104,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Header / Brand & Workspace Environment Switcher */}
         <div className="h-16 flex items-center justify-between px-3.5 border-b border-slate-100 relative">
           {!collapsed ? (
-            <div className="flex-1 min-w-0 pr-2">
-              <button
-                onClick={() => setIsEnvMenuOpen(!isEnvMenuOpen)}
-                className="w-full flex items-center justify-between p-1.5 -ml-1 rounded-xl hover:bg-slate-50 transition-colors group text-left"
-              >
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="w-8 h-8 rounded-xl bg-primary flex items-center justify-center shrink-0 shadow-sm shadow-primary/30 group-hover:scale-105 transition-transform">
-                    <span className="text-white font-bold text-sm tracking-tight">S</span>
-                  </div>
-                  <div className="flex flex-col min-w-0">
-                    <span className="font-semibold text-slate-900 text-sm tracking-tight leading-tight truncate">
-                      SubscriptIQ
-                    </span>
-                    <span className="text-[10px] text-slate-400 flex items-center gap-1 font-medium mt-0.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                      <span className="truncate">{currentEnv}</span>
-                    </span>
-                  </div>
-                </div>
-                <ChevronDown className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-700 transition-colors shrink-0" />
-              </button>
-
-              {/* Environment Popover Menu */}
-              {isEnvMenuOpen && (
-                <div className="absolute top-14 left-3 right-3 bg-white rounded-2xl shadow-xl border border-slate-200 p-1.5 z-50 animate-in fade-in zoom-in-95">
-                  <span className="text-[10px] uppercase font-semibold tracking-wider text-slate-400 px-2 py-1 block">
-                    Active Cluster
-                  </span>
-                  {envs.map(env => (
-                    <button
-                      key={env.name}
-                      onClick={() => {
-                        setCurrentEnv(env.name);
-                        setIsEnvMenuOpen(false);
-                        success('Workspace Switched', `Connected to ${env.name}`);
-                      }}
-                      className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs transition-colors ${
-                        currentEnv === env.name
-                          ? 'bg-lavender-100 text-primary font-semibold'
-                          : 'text-slate-700 hover:bg-slate-50'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                        <span>{env.name}</span>
-                      </div>
-                      <span className="text-[10px] text-slate-400 font-mono">{env.ping}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+            <NavLink to="/" className="flex-1 min-w-0 pr-2 flex items-center gap-2.5 p-1.5 -ml-1 rounded-xl">
+              <div className="w-8 h-8 rounded-xl bg-primary flex items-center justify-center shrink-0 shadow-sm shadow-primary/30">
+                <span className="text-white font-bold text-sm tracking-tight">S</span>
+              </div>
+              <div className="flex flex-col min-w-0">
+                <span className="font-semibold text-slate-900 text-sm tracking-tight leading-tight truncate">
+                  SubscriptIQ
+                </span>
+                <span className="text-[10px] text-slate-400 font-medium mt-0.5 truncate">Brightloop Software</span>
+              </div>
+            </NavLink>
           ) : (
             <NavLink to="/" className="w-full flex justify-center">
               <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shrink-0 shadow-sm shadow-primary/30 hover:scale-105 transition-transform">
@@ -186,7 +134,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {/* Navigation list */}
         <div className="flex-1 overflow-y-auto py-3 px-3 space-y-1">
-          {navItems.map(item => {
+          {navItems.filter(item => isAdmin || !item.adminOnly).map(item => {
             const Icon = item.icon;
             return (
               <NavLink
@@ -221,47 +169,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
           })}
         </div>
 
-        {/* Creative Interactive Side Panel Widget: Hover to Brighten with Theme! */}
+        {/* Billing Run (admin only, as the API requires) */}
+        {isAdmin && (
         <div className="p-3 border-t border-slate-100 bg-slate-50/50">
           {!collapsed ? (
-            <div
-              className="group rounded-2xl p-3.5 border cursor-pointer select-none transition-all duration-300 card-theme-brighten bg-white border-slate-200/80 shadow-xs"
-            >
-              {/* Header */}
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-semibold text-slate-800 flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 group-hover:bg-primary group-hover:animate-ping transition-colors" />
-                  MRR Target Goal
-                </span>
-                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full transition-all duration-200 bg-lavender-100 text-primary group-hover:bg-primary group-hover:text-white group-hover:shadow-xs">
-                  78% Achieved
-                </span>
-              </div>
-
-              {/* Progress bar */}
-              <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden mb-2">
-                <div className="h-full rounded-full transition-all duration-500 bg-primary group-hover:bg-gradient-to-r group-hover:from-primary group-hover:to-lavender-300 w-[78%]" />
-              </div>
-
-              {/* Figures */}
-              <div className="flex items-baseline justify-between text-xs mb-2">
-                <span className="font-bold text-slate-900 font-mono group-hover:text-primary transition-colors">$19,450</span>
-                <span className="text-slate-400 font-medium">Goal: $25k</span>
-              </div>
-
-              {/* Expanded Velocity Details on Hover */}
-              <div className="max-h-0 group-hover:max-h-24 overflow-hidden transition-all duration-300 opacity-0 group-hover:opacity-100 pt-0 group-hover:pt-2 border-t border-transparent group-hover:border-primary/20 mb-0 group-hover:mb-2.5 space-y-1 text-[11px] text-slate-600">
-                <div className="flex justify-between">
-                  <span className="text-slate-400">Monthly Run Rate:</span>
-                  <span className="font-semibold text-primary font-mono">+$1,650</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-400">Pace:</span>
-                  <span className="font-semibold text-emerald-600">4 days ahead</span>
-                </div>
-              </div>
-
-              {/* Run Cycle Button */}
+            <div className="group">
               <button
                 onClick={handleRunCycle}
                 disabled={runningCycle}
@@ -286,6 +198,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </button>
           )}
         </div>
+        )}
       </aside>
     </>
   );

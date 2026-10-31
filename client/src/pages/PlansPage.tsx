@@ -1,75 +1,41 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  CreditCard,
-  Plus,
-  Check,
-  Users,
-  Calendar,
-  ArrowRight,
-  Sparkles,
-  Zap,
-  Calculator,
-  X,
-  CheckCircle2,
-} from 'lucide-react';
+import { Plus, Check, Users, Sparkles, Zap, CheckCircle2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { api } from '../api/client';
-import { Plan, Product } from '../types';
+import { BillingInterval, Plan } from '../types';
+import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+
+const PERIOD_LABEL: Record<BillingInterval, string> = {
+  daily: 'day',
+  weekly: 'wk',
+  monthly: 'mo',
+  annual: 'yr',
+};
+
+const EMPTY_FORM = {
+  name: '',
+  billingInterval: 'monthly' as BillingInterval,
+  price: 999,
+  minQuantity: 1,
+};
 
 export const PlansPage: React.FC = () => {
   const [plans, setPlans] = useState<Plan[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [intervalFilter, setIntervalFilter] = useState<'all' | 'monthly' | 'annual'>('all');
+  const [intervalFilter, setIntervalFilter] = useState<'all' | BillingInterval>('all');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-
-  // Selected / Brightened plan card state
-  const [brightenedPlanId, setBrightenedPlanId] = useState<string | null>(null);
-
-  // Interactive seat simulation counters per plan
-  const [seatSimulations, setSeatSimulations] = useState<Record<string, number>>({});
-
-  const [formData, setFormData] = useState({
-    productId: '',
-    name: '',
-    billingInterval: 'monthly',
-    price: 99,
-    seatBased: false,
-    pricePerSeat: 20,
-    features: '',
-  });
+  const [formData, setFormData] = useState(EMPTY_FORM);
 
   const navigate = useNavigate();
+  const { isAdmin } = useAuth();
   const { success, error } = useToast();
 
   const loadData = async () => {
     try {
-      setLoading(true);
-      const [plns, prods] = await Promise.all([api.getPlans(), api.getProducts()]);
-      setPlans(plns);
-      setProducts(prods);
-
-      // Initialize default brightened plan
-      if (plns.length > 0 && !brightenedPlanId) {
-        setBrightenedPlanId(plns[0].id);
-      }
-
-      // Initialize seat counters
-      const initialSeats: Record<string, number> = {};
-      plns.forEach(p => {
-        initialSeats[p.id] = p.seatBased ? 5 : 1;
-      });
-      setSeatSimulations(initialSeats);
-
-      if (prods.length > 0 && !formData.productId) {
-        setFormData(prev => ({ ...prev, productId: prods[0].id }));
-      }
+      setPlans(await api.getPlans());
     } catch (err: any) {
       error('Failed to load plans', err.message);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -77,34 +43,12 @@ export const PlansPage: React.FC = () => {
     loadData();
   }, []);
 
-  const handleCardClick = (planId: string) => {
-    setBrightenedPlanId(prev => (prev === planId ? null : planId));
-  };
-
-  const handleSeatChange = (planId: string, delta: number, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setSeatSimulations(prev => {
-      const current = prev[planId] || 1;
-      const next = Math.max(1, current + delta);
-      return { ...prev, [planId]: next };
-    });
-  };
-
   const handleCreatePlan = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.productId) return;
+    if (!formData.name) return;
 
     try {
-      const featArray = formData.features.split(',').map(s => s.trim()).filter(Boolean);
-      await api.createPlan({
-        productId: formData.productId,
-        name: formData.name,
-        billingInterval: formData.billingInterval as any,
-        price: Number(formData.price),
-        seatBased: Boolean(formData.seatBased),
-        pricePerSeat: formData.seatBased ? Number(formData.pricePerSeat) : 0,
-        features: featArray,
-      });
+      await api.createPlan(formData);
 
       confetti({
         particleCount: 40,
@@ -115,6 +59,7 @@ export const PlansPage: React.FC = () => {
 
       success('Plan Created', `${formData.name} is now available.`);
       setIsAddModalOpen(false);
+      setFormData(EMPTY_FORM);
       loadData();
     } catch (err: any) {
       error('Failed to create plan', err.message);
@@ -133,64 +78,45 @@ export const PlansPage: React.FC = () => {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Subscription Plans</h1>
           <p className="text-sm text-slate-500 mt-1">
-            Pricing structures, billing cadence, seat matrices, and features. Click any plan box to inspect and brighten with theme.
+            Billing cadence and the lifecycle rules each plan allows.
           </p>
         </div>
 
         <div className="flex items-center gap-3">
           {/* Interval Toggle */}
           <div className="bg-white border border-slate-200 p-1 rounded-xl flex items-center text-xs font-medium shadow-2xs">
-            <button
-              onClick={() => setIntervalFilter('all')}
-              className={`px-3 py-1.5 rounded-lg transition-colors ${
-                intervalFilter === 'all' ? 'bg-primary text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              All
-            </button>
-            <button
-              onClick={() => setIntervalFilter('monthly')}
-              className={`px-3 py-1.5 rounded-lg transition-colors ${
-                intervalFilter === 'monthly' ? 'bg-primary text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              Monthly
-            </button>
-            <button
-              onClick={() => setIntervalFilter('annual')}
-              className={`px-3 py-1.5 rounded-lg transition-colors ${
-                intervalFilter === 'annual' ? 'bg-primary text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              Annual
-            </button>
+            {(['all', 'daily', 'weekly', 'monthly', 'annual'] as const).map(interval => (
+              <button
+                key={interval}
+                onClick={() => setIntervalFilter(interval)}
+                className={`px-3 py-1.5 rounded-lg capitalize transition-colors ${
+                  intervalFilter === interval ? 'bg-primary text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                {interval}
+              </button>
+            ))}
           </div>
 
-          <button
-            onClick={() => setIsAddModalOpen(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-white text-sm font-medium hover:bg-primary-hover shadow-sm btn-interaction transition-all"
-          >
-            <Plus className="w-4 h-4" />
-            Add Plan
-          </button>
+          {isAdmin && (
+            <button
+              onClick={() => setIsAddModalOpen(true)}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-white text-sm font-medium hover:bg-primary-hover shadow-sm btn-interaction transition-all"
+            >
+              <Plus className="w-4 h-4" />
+              Add Plan
+            </button>
+          )}
         </div>
       </div>
 
       {/* Plans Grid with Signature Click-to-Brighten Theme Interaction */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredPlans.map(plan => {
-          const product = products.find(p => p.id === plan.productId);
-          const isBrightened = brightenedPlanId === plan.id;
-          const seats = seatSimulations[plan.id] || 1;
-          const calculatedPrice = plan.seatBased
-            ? plan.price + Math.max(0, seats - 1) * plan.pricePerSeat
-            : plan.price;
-          const mrrYield = calculatedPrice * (plan.activeSubscribers || 1);
-
           return (
             <div
               key={plan.id}
-              onClick={() => navigate(`/subscriptions?plan=${plan.id}`)}
+              onClick={() => navigate('/subscriptions')}
               className="group rounded-2xl p-6 flex flex-col justify-between cursor-pointer select-none card-theme-brighten bg-white border border-slate-200/80 shadow-card"
             >
               {/* Top Accent Line illuminates on Hover */}
@@ -200,7 +126,7 @@ export const PlansPage: React.FC = () => {
                 {/* Header Tag and Interval */}
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full transition-all duration-200 text-primary bg-lavender-100 group-hover:bg-primary group-hover:text-white group-hover:shadow-xs">
-                    {product ? product.name : 'Platform Plan'}
+                    Plan
                   </span>
                   <div className="flex items-center gap-1.5">
                     <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
@@ -221,42 +147,13 @@ export const PlansPage: React.FC = () => {
                 {/* Price Display */}
                 <div className="mt-4 flex items-baseline gap-1">
                   <span className="text-3xl font-extrabold text-slate-900 font-mono tracking-tight group-hover:scale-105 transition-transform origin-left">
-                    ${calculatedPrice.toLocaleString()}
+                    ${plan.price.toLocaleString()}
                   </span>
                   <span className="text-xs text-slate-500 font-medium">
-                    /{plan.billingInterval === 'annual' ? 'yr' : 'mo'}
+                    /{PERIOD_LABEL[plan.billingInterval]}
                   </span>
                 </div>
-
-                {/* Seat Stepper or Flat indicator */}
-                {plan.seatBased ? (
-                  <div className="mt-2.5 p-2 rounded-xl bg-slate-50/80 border border-slate-200/70 group-hover:bg-white/90 group-hover:border-primary/30 transition-colors flex items-center justify-between">
-                    <span className="text-xs font-medium text-slate-700">
-                      Seats ({seats}):
-                    </span>
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        onClick={e => handleSeatChange(plan.id, -1, e)}
-                        className="w-6 h-6 rounded-lg bg-white border border-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center hover:bg-slate-100 active:scale-90 transition-transform"
-                        title="Remove seat"
-                      >
-                        -
-                      </button>
-                      <span className="font-mono text-xs font-bold text-primary w-5 text-center">
-                        {seats}
-                      </span>
-                      <button
-                        onClick={e => handleSeatChange(plan.id, 1, e)}
-                        className="w-6 h-6 rounded-lg bg-white border border-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center hover:bg-slate-100 active:scale-90 transition-transform"
-                        title="Add seat"
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-xs text-slate-400 mt-1">Flat rate • Unlimited users</p>
-                )}
+                <p className="text-xs text-slate-400 mt-1">List price. Invoices are built from product lines.</p>
 
                 {/* Features List */}
                 <div className="mt-5 space-y-2 border-t border-slate-100 pt-4">
@@ -285,7 +182,7 @@ export const PlansPage: React.FC = () => {
                   <button
                     onClick={e => {
                       e.stopPropagation();
-                      navigate(`/quotations?plan=${plan.id}`);
+                      navigate('/quotations');
                     }}
                     className="flex-1 py-1.5 px-2.5 rounded-xl bg-primary text-white text-xs font-semibold hover:bg-primary-hover shadow-xs flex items-center justify-center gap-1.5 btn-interaction"
                   >
@@ -295,7 +192,7 @@ export const PlansPage: React.FC = () => {
                   <button
                     onClick={e => {
                       e.stopPropagation();
-                      navigate(`/subscriptions?plan=${plan.id}`);
+                      navigate('/subscriptions');
                     }}
                     className="flex-1 py-1.5 px-2.5 rounded-xl bg-white border border-primary/30 text-primary text-xs font-semibold hover:bg-lavender-50 shadow-2xs flex items-center justify-center gap-1.5 btn-interaction"
                   >
@@ -316,22 +213,6 @@ export const PlansPage: React.FC = () => {
             <h3 className="text-base font-semibold text-slate-900">Create Pricing Plan</h3>
             <form onSubmit={handleCreatePlan} className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">Parent Product *</label>
-                <select
-                  required
-                  value={formData.productId}
-                  onChange={e => setFormData({ ...formData, productId: e.target.value })}
-                  className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden"
-                >
-                  {products.map(p => (
-                    <option key={p.id} value={p.id}>
-                      {p.name} ({p.category})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
                 <label className="block text-xs font-medium text-slate-700 mb-1">Plan Name *</label>
                 <input
                   type="text"
@@ -348,15 +229,17 @@ export const PlansPage: React.FC = () => {
                   <label className="block text-xs font-medium text-slate-700 mb-1">Billing Interval</label>
                   <select
                     value={formData.billingInterval}
-                    onChange={e => setFormData({ ...formData, billingInterval: e.target.value })}
+                    onChange={e => setFormData({ ...formData, billingInterval: e.target.value as BillingInterval })}
                     className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden"
                   >
+                    <option value="daily">Daily</option>
+                    <option value="weekly">Weekly</option>
                     <option value="monthly">Monthly</option>
                     <option value="annual">Annual</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1">Base Price ($) *</label>
+                  <label className="block text-xs font-medium text-slate-700 mb-1">List Price *</label>
                   <input
                     type="number"
                     required
@@ -368,40 +251,13 @@ export const PlansPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Seat based toggle */}
-              <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 space-y-3">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.seatBased}
-                    onChange={e => setFormData({ ...formData, seatBased: e.target.checked })}
-                    className="w-4 h-4 rounded text-primary focus:ring-primary"
-                  />
-                  <span className="text-xs font-semibold text-slate-800">Enable Seat-Based Pricing</span>
-                </label>
-                {formData.seatBased && (
-                  <div>
-                    <label className="block text-xs font-medium text-slate-600 mb-1">
-                      Price per additional seat ($)
-                    </label>
-                    <input
-                      type="number"
-                      min={0}
-                      value={formData.pricePerSeat}
-                      onChange={e => setFormData({ ...formData, pricePerSeat: Number(e.target.value) })}
-                      className="w-full px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:outline-hidden"
-                    />
-                  </div>
-                )}
-              </div>
-
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">Included Features (comma separated)</label>
+                <label className="block text-xs font-medium text-slate-700 mb-1">Minimum Quantity</label>
                 <input
-                  type="text"
-                  value={formData.features}
-                  onChange={e => setFormData({ ...formData, features: e.target.value })}
-                  placeholder="e.g. 50k MAU, Dedicated Slack, 99.99% SLA"
+                  type="number"
+                  min={1}
+                  value={formData.minQuantity}
+                  onChange={e => setFormData({ ...formData, minQuantity: Math.max(1, Number(e.target.value)) })}
                   className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden"
                 />
               </div>

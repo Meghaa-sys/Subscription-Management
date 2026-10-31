@@ -1,53 +1,50 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import {
-  FileText,
-  Search,
-  Filter,
-  Printer,
-  DollarSign,
-  X,
-  CreditCard,
-  Building,
-  CheckCircle,
-} from 'lucide-react';
+import { Search, Filter, Printer, DollarSign, X, CheckCircle, BadgeCheck } from 'lucide-react';
 import { api } from '../api/client';
-import { Invoice } from '../types';
+import { Invoice, PaymentMethod } from '../types';
+import { LoadMore } from '../components/LoadMore';
+import { RecordPaymentFields } from '../components/RecordPaymentFields';
 import { StatusBadge } from '../components/StatusBadge';
 import { useToast } from '../context/ToastContext';
+import { useDebouncedValue } from '../hooks/useDebouncedValue';
+import { usePagedList } from '../hooks/usePagedList';
+
+const canPay = (invoice: Invoice) => invoice.status === 'pending' || invoice.status === 'overdue';
 
 export const InvoicesPage: React.FC = () => {
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
-  const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('all');
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search);
 
   // Selected Invoice Modal
-  const [selectedInvoice, setSelectedInvoice] = useState<any | null>(null);
-  const [modalLoading, setModalLoading] = useState(false);
+  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
 
   // Quick Payment Modal
   const [paymentInvoice, setPaymentInvoice] = useState<Invoice | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState('credit_card');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('bank_transfer');
+  const [paymentAmount, setPaymentAmount] = useState('');
 
   const [searchParams] = useSearchParams();
   const { success, error } = useToast();
 
-  const loadInvoices = async () => {
-    try {
-      setLoading(true);
-      const data = await api.getInvoices({ status: statusFilter });
-      setInvoices(data);
-    } catch (err: any) {
-      error('Failed to load invoices', err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const load = useCallback(
+    (pageNumber: number) => api.getInvoices({ status: statusFilter, search: debouncedSearch, pageNumber }),
+    [statusFilter, debouncedSearch]
+  );
+  const {
+    rows: invoices,
+    total,
+    loading,
+    loadingMore,
+    reload: loadInvoices,
+    loadMore,
+  } = usePagedList(load, message => error('Failed to load invoices', message));
 
-  useEffect(() => {
-    loadInvoices();
-  }, [statusFilter]);
+  const openPayment = (invoice: Invoice) => {
+    setPaymentInvoice(invoice);
+    setPaymentAmount(invoice.balance.toFixed(2));
+  };
 
   // Open invoice if query ?id=... is present
   useEffect(() => {
@@ -63,13 +60,19 @@ export const InvoicesPage: React.FC = () => {
 
   const handleViewInvoice = async (id: string) => {
     try {
-      setModalLoading(true);
-      const data = await api.getInvoice(id);
-      setSelectedInvoice(data);
+      setSelectedInvoice(await api.getInvoice(id));
     } catch (err: any) {
       error('Failed to load invoice details', err.message);
-    } finally {
-      setModalLoading(false);
+    }
+  };
+
+  const handleConfirmInvoice = async (invoice: Invoice) => {
+    try {
+      await api.confirmInvoice(invoice.id);
+      success('Invoice Confirmed', `${invoice.invoiceNumber} can now receive payments.`);
+      loadInvoices();
+    } catch (err: any) {
+      error('Failed to confirm invoice', err.message);
     }
   };
 
@@ -78,30 +81,21 @@ export const InvoicesPage: React.FC = () => {
     if (!paymentInvoice) return;
 
     try {
-      await api.recordPayment({
+      const updated = await api.recordPayment({
         invoiceId: paymentInvoice.id,
         paymentMethod,
-        amount: paymentInvoice.total,
+        amount: Number(paymentAmount),
       });
-      success('Payment Recorded', `Payment of $${paymentInvoice.total.toFixed(2)} applied to ${paymentInvoice.invoiceNumber}.`);
+      success('Payment Recorded', `$${Number(paymentAmount).toFixed(2)} applied to ${updated.invoiceNumber}.`);
       setPaymentInvoice(null);
-      if (selectedInvoice && selectedInvoice.id === paymentInvoice.id) {
-        handleViewInvoice(paymentInvoice.id);
+      if (selectedInvoice && selectedInvoice.id === updated.id) {
+        setSelectedInvoice(updated);
       }
       loadInvoices();
     } catch (err: any) {
       error('Payment recording failed', err.message);
     }
   };
-
-  const filteredInvoices = invoices.filter(inv => {
-    if (!search.trim()) return true;
-    const q = search.toLowerCase();
-    return (
-      inv.invoiceNumber.toLowerCase().includes(q) ||
-      (inv.customerName || '').toLowerCase().includes(q)
-    );
-  });
 
   return (
     <div className="p-6 lg:p-8 space-y-6 max-w-[1580px] mx-auto">
@@ -124,9 +118,11 @@ export const InvoicesPage: React.FC = () => {
               className="text-xs font-medium text-slate-700 bg-transparent focus:outline-hidden"
             >
               <option value="all">All Statuses</option>
-              <option value="paid">Paid</option>
+              <option value="draft">Draft</option>
               <option value="pending">Pending</option>
               <option value="overdue">Overdue</option>
+              <option value="paid">Paid</option>
+              <option value="void">Cancelled</option>
             </select>
           </div>
         </div>
@@ -168,14 +164,14 @@ export const InvoicesPage: React.FC = () => {
                     Loading invoices...
                   </td>
                 </tr>
-              ) : filteredInvoices.length === 0 ? (
+              ) : invoices.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="py-12 text-center text-slate-400">
                     No invoices found.
                   </td>
                 </tr>
               ) : (
-                filteredInvoices.map(inv => (
+                invoices.map(inv => (
                   <tr
                     key={inv.id}
                     onClick={() => handleViewInvoice(inv.id)}
@@ -197,9 +193,18 @@ export const InvoicesPage: React.FC = () => {
                     </td>
                     <td className="py-3.5 px-6 text-right" onClick={e => e.stopPropagation()}>
                       <div className="flex items-center justify-end gap-2">
-                        {inv.status !== 'paid' && (
+                        {inv.status === 'draft' && (
                           <button
-                            onClick={() => setPaymentInvoice(inv)}
+                            onClick={() => handleConfirmInvoice(inv)}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-lavender-100 text-primary text-xs font-medium hover:bg-lavender-200 border border-primary/20 transition-colors"
+                          >
+                            <BadgeCheck className="w-3.5 h-3.5" />
+                            Confirm
+                          </button>
+                        )}
+                        {canPay(inv) && (
+                          <button
+                            onClick={() => openPayment(inv)}
                             className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 text-xs font-medium hover:bg-emerald-100 border border-emerald-200/60 transition-colors"
                           >
                             <DollarSign className="w-3.5 h-3.5" />
@@ -220,6 +225,7 @@ export const InvoicesPage: React.FC = () => {
             </tbody>
           </table>
         </div>
+        {!loading && <LoadMore shown={invoices.length} total={total} loading={loadingMore} onClick={loadMore} />}
       </div>
 
       {/* Invoice Detail & Printable View Modal */}
@@ -242,11 +248,9 @@ export const InvoicesPage: React.FC = () => {
                   <Printer className="w-3.5 h-3.5" />
                   Print / PDF
                 </button>
-                {selectedInvoice.status !== 'paid' && (
+                {canPay(selectedInvoice) && (
                   <button
-                    onClick={() => {
-                      setPaymentInvoice(selectedInvoice);
-                    }}
+                    onClick={() => openPayment(selectedInvoice)}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-white text-xs font-semibold hover:bg-primary-hover transition-colors"
                   >
                     <DollarSign className="w-3.5 h-3.5" />
@@ -272,15 +276,9 @@ export const InvoicesPage: React.FC = () => {
                       S
                     </div>
                     <span className="text-xl font-bold tracking-tight text-slate-900">
-                      {selectedInvoice.companySettings?.companyName || 'Brightloop Software'}
+                      Brightloop Software
                     </span>
                   </div>
-                  <p className="text-xs text-slate-400 mt-1">
-                    {selectedInvoice.companySettings?.address || '548 Market St, San Francisco, CA'}
-                  </p>
-                  <p className="text-xs text-slate-400">
-                    Tax ID: {selectedInvoice.companySettings?.taxId || 'US-892401928'}
-                  </p>
                 </div>
 
                 <div className="text-right">
@@ -305,11 +303,11 @@ export const InvoicesPage: React.FC = () => {
                   Billed To
                 </span>
                 <p className="text-sm font-bold text-slate-900">
-                  {selectedInvoice.customer?.name || selectedInvoice.customerName}
+                  {selectedInvoice.customerName}
                 </p>
-                <p>{selectedInvoice.customer?.company || selectedInvoice.customerCompany}</p>
-                <p>{selectedInvoice.customer?.email || selectedInvoice.customerEmail}</p>
-                <p>{selectedInvoice.customer?.address || selectedInvoice.customerAddress}</p>
+                <p>{selectedInvoice.customerCompany}</p>
+                <p>{selectedInvoice.customerEmail}</p>
+                <p>{selectedInvoice.customerAddress}</p>
               </div>
 
               {/* Line Items Table */}
@@ -354,13 +352,19 @@ export const InvoicesPage: React.FC = () => {
                     </div>
                   )}
                   <div className="flex justify-between text-slate-500">
-                    <span>Tax (8.25%)</span>
+                    <span>Tax</span>
                     <span className="font-mono">${selectedInvoice.taxAmount.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-sm font-bold text-slate-900 border-t border-slate-200 pt-2">
                     <span>Total Amount</span>
                     <span className="font-mono">${selectedInvoice.total.toFixed(2)}</span>
                   </div>
+                  {canPay(selectedInvoice) && (
+                    <div className="flex justify-between font-semibold text-slate-900">
+                      <span>Balance Due</span>
+                      <span className="font-mono">${selectedInvoice.balance.toFixed(2)}</span>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -370,10 +374,11 @@ export const InvoicesPage: React.FC = () => {
                   <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0" />
                   <div className="text-xs text-emerald-900">
                     <p className="font-semibold">Invoice Fully Settled</p>
-                    <p className="text-[11px] text-emerald-700 mt-0.5">
-                      Paid on {new Date(selectedInvoice.paidAt).toLocaleDateString()} via{' '}
-                      {selectedInvoice.paymentMethod || 'Credit Card'}.
-                    </p>
+                    {selectedInvoice.paidAt && (
+                      <p className="text-[11px] text-emerald-700 mt-0.5">
+                        Last payment on {selectedInvoice.paidAt} via {selectedInvoice.paymentMethod}.
+                      </p>
+                    )}
                   </div>
                 </div>
               )}
@@ -407,25 +412,18 @@ export const InvoicesPage: React.FC = () => {
                 <div className="flex justify-between text-slate-500">
                   <span>Balance Due</span>
                   <span className="font-bold text-slate-900 font-mono">
-                    ${paymentInvoice.total.toFixed(2)}
+                    ${paymentInvoice.balance.toFixed(2)}
                   </span>
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">
-                  Settlement Method *
-                </label>
-                <select
-                  value={paymentMethod}
-                  onChange={e => setPaymentMethod(e.target.value)}
-                  className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden"
-                >
-                  <option value="credit_card">Credit Card (Stripe Gateway)</option>
-                  <option value="bank_transfer">ACH Direct Debit</option>
-                  <option value="wire">Wire Transfer</option>
-                </select>
-              </div>
+              <RecordPaymentFields
+                amount={paymentAmount}
+                balance={paymentInvoice.balance}
+                method={paymentMethod}
+                onAmountChange={setPaymentAmount}
+                onMethodChange={setPaymentMethod}
+              />
 
               <div className="pt-4 flex justify-end gap-3 border-t border-slate-100">
                 <button

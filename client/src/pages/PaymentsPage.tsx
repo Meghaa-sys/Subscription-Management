@@ -1,75 +1,69 @@
-import React, { useState, useEffect } from 'react';
-import { DollarSign, Plus, CheckCircle, AlertCircle, Clock, CreditCard, Search, X } from 'lucide-react';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Plus, Search, X } from 'lucide-react';
 import { api } from '../api/client';
-import { Payment, Invoice } from '../types';
-import { StatusBadge } from '../components/StatusBadge';
+import { Invoice, PaymentMethod } from '../types';
+import { LoadMore } from '../components/LoadMore';
+import { RecordPaymentFields } from '../components/RecordPaymentFields';
 import { useToast } from '../context/ToastContext';
+import { useDebouncedValue } from '../hooks/useDebouncedValue';
+import { usePagedList } from '../hooks/usePagedList';
 
 export const PaymentsPage: React.FC = () => {
-  const [payments, setPayments] = useState<Payment[]>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
-  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search);
   const [isRecordModalOpen, setIsRecordModalOpen] = useState(false);
 
   // Form State
   const [selectedInvoiceId, setSelectedInvoiceId] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState('credit_card');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('bank_transfer');
+  const [amount, setAmount] = useState('');
 
   const { success, error } = useToast();
 
-  const loadData = async () => {
-    try {
-      setLoading(true);
-      const [payList, invList] = await Promise.all([
-        api.getPayments(),
-        api.getInvoices({ status: 'all' }),
-      ]);
-      setPayments(payList);
-      const unpaid = invList.filter(i => i.status !== 'paid');
-      setInvoices(unpaid);
-      if (unpaid.length > 0 && !selectedInvoiceId) {
-        setSelectedInvoiceId(unpaid[0].id);
-      }
-    } catch (err: any) {
-      error('Failed to load payments', err.message);
-    } finally {
-      setLoading(false);
-    }
+  const load = useCallback(
+    (pageNumber: number) => api.getPayments({ search: debouncedSearch, pageNumber }),
+    [debouncedSearch]
+  );
+  const { rows: payments, total, loading, loadingMore, reload, loadMore } = usePagedList(load, message =>
+    error('Failed to load payments', message)
+  );
+
+  const selectInvoice = (invoice?: Invoice) => {
+    setSelectedInvoiceId(invoice?.id ?? '');
+    setAmount(invoice ? invoice.balance.toFixed(2) : '');
   };
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (!isRecordModalOpen) return;
+    api
+      .getOpenInvoices()
+      .then(data => {
+        setInvoices(data.results);
+        selectInvoice(data.results[0]);
+      })
+      .catch(err => error('Failed to load open invoices', err.message));
+  }, [isRecordModalOpen]);
+
+  const selectedInvoice = invoices.find(i => i.id === selectedInvoiceId);
 
   const handleRecordPayment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedInvoiceId) return;
 
     try {
-      const targetInvoice = invoices.find(i => i.id === selectedInvoiceId);
-      const res = await api.recordPayment({
+      const invoice = await api.recordPayment({
         invoiceId: selectedInvoiceId,
         paymentMethod,
-        amount: targetInvoice?.total,
+        amount: Number(amount),
       });
-      success('Payment Recorded', `Successfully reconciled $${res.payment.amount} for ${res.invoice.invoiceNumber}.`);
+      success('Payment Recorded', `$${Number(amount).toFixed(2)} applied to ${invoice.invoiceNumber}.`);
       setIsRecordModalOpen(false);
-      loadData();
+      reload();
     } catch (err: any) {
       error('Payment Failed', err.message);
     }
   };
-
-  const filteredPayments = payments.filter(p => {
-    if (!search.trim()) return true;
-    const q = search.toLowerCase();
-    return (
-      p.paymentReference.toLowerCase().includes(q) ||
-      (p.customerName || '').toLowerCase().includes(q) ||
-      p.transactionId.toLowerCase().includes(q)
-    );
-  });
 
   return (
     <div className="p-6 lg:p-8 space-y-6 max-w-[1580px] mx-auto">
@@ -78,7 +72,7 @@ export const PaymentsPage: React.FC = () => {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Payments</h1>
           <p className="text-sm text-slate-500 mt-1">
-            Real-time transaction settlements, gateway reconciliations, and payout ledger.
+            Money received against invoices. Payments are recorded here, not collected online.
           </p>
         </div>
 
@@ -99,7 +93,7 @@ export const PaymentsPage: React.FC = () => {
             type="text"
             value={search}
             onChange={e => setSearch(e.target.value)}
-            placeholder="Search by payment reference, customer, or transaction ID..."
+            placeholder="Search by invoice #, customer, or note..."
             className="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden focus:bg-white"
           />
         </div>
@@ -116,26 +110,25 @@ export const PaymentsPage: React.FC = () => {
                 <th className="py-3.5 px-6">Invoice #</th>
                 <th className="py-3.5 px-6">Amount</th>
                 <th className="py-3.5 px-6">Method</th>
-                <th className="py-3.5 px-6">Status</th>
-                <th className="py-3.5 px-6">Transaction ID</th>
-                <th className="py-3.5 px-6 text-right">Settled Date</th>
+                <th className="py-3.5 px-6">Note</th>
+                <th className="py-3.5 px-6 text-right">Payment Date</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
               {loading ? (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-slate-400">
+                  <td colSpan={7} className="py-12 text-center text-slate-400">
                     Loading payments...
                   </td>
                 </tr>
-              ) : filteredPayments.length === 0 ? (
+              ) : payments.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-slate-400">
+                  <td colSpan={7} className="py-12 text-center text-slate-400">
                     No payments found.
                   </td>
                 </tr>
               ) : (
-                filteredPayments.map(pay => (
+                payments.map(pay => (
                   <tr key={pay.id} className="hover:bg-slate-50/80 transition-colors">
                     <td className="py-3.5 px-6 font-mono font-medium text-slate-900">
                       {pay.paymentReference}
@@ -149,24 +142,16 @@ export const PaymentsPage: React.FC = () => {
                     <td className="py-3.5 px-6 font-mono font-bold text-slate-900">
                       ${pay.amount.toFixed(2)}
                     </td>
-                    <td className="py-3.5 px-6 text-xs text-slate-600 capitalize">
-                      {pay.paymentMethod.replace(/_/g, ' ')}
-                    </td>
-                    <td className="py-3.5 px-6">
-                      <StatusBadge status={pay.status} size="sm" />
-                    </td>
-                    <td className="py-3.5 px-6 font-mono text-xs text-slate-400">
-                      {pay.transactionId}
-                    </td>
-                    <td className="py-3.5 px-6 text-right text-xs text-slate-500">
-                      {new Date(pay.createdAt).toLocaleDateString()}
-                    </td>
+                    <td className="py-3.5 px-6 text-xs text-slate-600">{pay.paymentMethod}</td>
+                    <td className="py-3.5 px-6 text-xs text-slate-400">{pay.note || '—'}</td>
+                    <td className="py-3.5 px-6 text-right text-xs text-slate-500">{pay.paymentDate}</td>
                   </tr>
                 ))
               )}
             </tbody>
           </table>
         </div>
+        {!loading && <LoadMore shown={payments.length} total={total} loading={loadingMore} onClick={loadMore} />}
       </div>
 
       {/* Record Payment Modal */}
@@ -174,7 +159,7 @@ export const PaymentsPage: React.FC = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in">
           <div className="w-full max-w-md bg-white rounded-2xl shadow-modal border border-slate-200 p-6 space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-base font-semibold text-slate-900">Record Offline Payment</h3>
+              <h3 className="text-base font-semibold text-slate-900">Record Payment</h3>
               <button
                 onClick={() => setIsRecordModalOpen(false)}
                 className="text-slate-400 hover:text-slate-600"
@@ -185,42 +170,35 @@ export const PaymentsPage: React.FC = () => {
 
             {invoices.length === 0 ? (
               <div className="p-6 text-center text-xs text-slate-500">
-                All existing invoices are currently settled! No open balances.
+                No confirmed invoices have a balance to pay.
               </div>
             ) : (
               <form onSubmit={handleRecordPayment} className="space-y-4">
                 <div>
                   <label className="block text-xs font-medium text-slate-700 mb-1">
-                    Select Open Invoice *
+                    Open Invoice (oldest first) *
                   </label>
                   <select
                     required
                     value={selectedInvoiceId}
-                    onChange={e => setSelectedInvoiceId(e.target.value)}
+                    onChange={e => selectInvoice(invoices.find(i => i.id === e.target.value))}
                     className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden"
                   >
                     {invoices.map(inv => (
                       <option key={inv.id} value={inv.id}>
-                        {inv.invoiceNumber} - {inv.customerName} (${inv.total.toFixed(2)})
+                        {inv.invoiceNumber} - {inv.customerName} (${inv.balance.toFixed(2)} due)
                       </option>
                     ))}
                   </select>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1">
-                    Settlement Method *
-                  </label>
-                  <select
-                    value={paymentMethod}
-                    onChange={e => setPaymentMethod(e.target.value)}
-                    className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden"
-                  >
-                    <option value="credit_card">Credit Card (Stripe)</option>
-                    <option value="bank_transfer">ACH Direct Transfer</option>
-                    <option value="wire">Bank Wire Settlement</option>
-                  </select>
-                </div>
+                <RecordPaymentFields
+                  amount={amount}
+                  balance={selectedInvoice?.balance ?? 0}
+                  method={paymentMethod}
+                  onAmountChange={setAmount}
+                  onMethodChange={setPaymentMethod}
+                />
 
                 <div className="pt-4 flex justify-end gap-3 border-t border-slate-100">
                   <button

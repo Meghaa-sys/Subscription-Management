@@ -7,8 +7,9 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
+      // The Django API, which talks to Neon. See backend/README.md.
       '/api': {
-        target: 'http://localhost:5000',
+        target: process.env.API_TARGET || 'http://127.0.0.1:8000',
         changeOrigin: true,
       },
     },

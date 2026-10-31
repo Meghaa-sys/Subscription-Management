@@ -17,15 +17,17 @@ import {
   Trash2,
   Edit,
 } from 'lucide-react';
-import { api } from '../api/client';
+import { api, formatMoney } from '../api/client';
 import { Customer } from '../types';
 import { StatusBadge } from '../components/StatusBadge';
 import { useToast } from '../context/ToastContext';
+import { useDebouncedValue } from '../hooks/useDebouncedValue';
 
 export const CustomersPage: React.FC = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search);
   const [statusFilter, setStatusFilter] = useState('all');
   const [sortBy, setSortBy] = useState('spent_desc');
 
@@ -51,7 +53,7 @@ export const CustomersPage: React.FC = () => {
     try {
       setLoading(true);
       const data = await api.getCustomers({
-        search,
+        search: debouncedSearch,
         status: statusFilter,
         sort: sortBy,
       });
@@ -65,7 +67,7 @@ export const CustomersPage: React.FC = () => {
 
   useEffect(() => {
     loadCustomers();
-  }, [search, statusFilter, sortBy]);
+  }, [debouncedSearch, statusFilter, sortBy]);
 
   // Open customer if query param ?id=... is provided
   useEffect(() => {
@@ -241,7 +243,7 @@ export const CustomersPage: React.FC = () => {
                       <StatusBadge status={cust.status} size="sm" />
                     </td>
                     <td className="py-3.5 px-6 font-mono font-semibold text-slate-900">
-                      ${cust.totalSpent.toLocaleString()}
+                      ${formatMoney(cust.totalSpent)}
                     </td>
                     <td className="py-3.5 px-6 text-xs text-slate-500">
                       {new Date(cust.createdAt).toLocaleDateString()}
@@ -334,13 +336,13 @@ export const CustomersPage: React.FC = () => {
                   <div className="p-4 rounded-xl bg-slate-50 border border-slate-100">
                     <span className="text-xs font-medium text-slate-400">Lifetime Revenue</span>
                     <p className="text-2xl font-bold font-mono text-slate-900 mt-1">
-                      ${selectedCustomerDetails.totalSpent.toLocaleString()}
+                      ${formatMoney(selectedCustomerDetails.totalSpent)}
                     </p>
                   </div>
                   <div className="p-4 rounded-xl bg-slate-50 border border-slate-100">
                     <span className="text-xs font-medium text-slate-400">Outstanding Balance</span>
                     <p className="text-2xl font-bold font-mono text-slate-900 mt-1">
-                      ${selectedCustomerDetails.balance.toLocaleString()}
+                      ${formatMoney(selectedCustomerDetails.balance)}
                     </p>
                   </div>
                 </div>
@@ -364,10 +366,10 @@ export const CustomersPage: React.FC = () => {
                         >
                           <div>
                             <p className="text-sm font-semibold text-slate-900 font-mono">
-                              #{sub.id}
+                              {sub.number}
                             </p>
                             <p className="text-xs text-slate-400">
-                              ${sub.amount}/{sub.billingCycle} • Renews {sub.nextRenewal}
+                              ${sub.amount}/{sub.billingCycle} • Next billing {sub.nextRenewal}
                             </p>
                           </div>
                           <StatusBadge status={sub.status} size="sm" />
@@ -486,7 +488,7 @@ export const CustomersPage: React.FC = () => {
                     type="text"
                     value={formData.phone}
                     onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                    placeholder="+1 (555) 000-0000"
+                    placeholder="+91 98765 43210"
                     className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden focus:bg-white focus:border-primary"
                   />
                 </div>

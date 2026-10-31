@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Navigate, Routes, Route } from 'react-router-dom';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import { Sidebar } from './components/Sidebar';
 import { TopNav } from './components/TopNav';
 import { GlobalSearchModal } from './components/GlobalSearchModal';
 
 // Pages
+import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { CustomersPage } from './pages/CustomersPage';
 import { ProductsPage } from './pages/ProductsPage';
@@ -21,6 +23,7 @@ import { UsersPage } from './pages/UsersPage';
 import { SettingsPage } from './pages/SettingsPage';
 
 function AppContent() {
+  const { isAdmin } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -70,7 +73,7 @@ function AppContent() {
             <Route path="/discounts" element={<DiscountsPage />} />
             <Route path="/taxes" element={<TaxesPage />} />
             <Route path="/reports" element={<ReportsPage />} />
-            <Route path="/users" element={<UsersPage />} />
+            <Route path="/users" element={isAdmin ? <UsersPage /> : <Navigate to="/" replace />} />
             <Route path="/settings" element={<SettingsPage />} />
           </Routes>
         </main>
@@ -82,12 +85,23 @@ function AppContent() {
   );
 }
 
+function SessionGate() {
+  const { user, checkingSession } = useAuth();
+
+  if (checkingSession) {
+    return <div className="min-h-screen bg-background" />;
+  }
+  return user ? <AppContent /> : <LoginPage />;
+}
+
 export default function App() {
   return (
     <ToastProvider>
-      <BrowserRouter>
-        <AppContent />
-      </BrowserRouter>
+      <AuthProvider>
+        <BrowserRouter>
+          <SessionGate />
+        </BrowserRouter>
+      </AuthProvider>
     </ToastProvider>
   );
 }
