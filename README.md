@@ -73,7 +73,9 @@ Pre-configured demo logins available after running `python manage.py seed`:
 | :--- | :--- | :--- | :--- |
 | **Administrator** | `admin@brightloop.test` | `Admin@12345!` | Full administration, products, plans, taxes, discounts, staff accounts, revenue reporting |
 | **Staff** | `staff1@brightloop.test`<br>`staff2@brightloop.test` | `Staff@12345!` | Customer management, quotations, subscription lifecycle, invoices, and payments |
-| **Customer** | `customer1@brightloop.test` *(and up)* | `Customer@12345!` | Self-service portal: personal subscriptions, invoices, and payment tracking |
+| **Customer 1** | `customer1@brightloop.test` *(Aarav Traders)* | `Customer@12345!` | Self-service portal: personal subscriptions, invoices, and payment tracking |
+| **Customer 4** | `customer4@brightloop.test` *(Deccan Textiles)* | `Customer@12345!` | Self-service portal: 3 subscriptions (active/paused), 8 invoices, balance history |
+| **Customers 2–12** | `customer2@brightloop.test` ... `customer12@brightloop.test` | `Customer@12345!` | Additional seeded customer accounts linked to client companies |
 
 ### 4.2 Product and Variant Management
 
@@ -580,4 +582,6 @@ When running the platform with seeded demo data (`python manage.py seed` in `bac
 | :--- | :--- | :--- | :--- |
 | **Administrator** | `admin@brightloop.test` | `Admin@12345!` | Full administrative access: products, plans, taxes, discounts, staff accounts, system settings, and analytics. |
 | **Staff** | `staff1@brightloop.test`<br>`staff2@brightloop.test` | `Staff@12345!` | Operational access: customers, quotations, subscriptions, invoice creation/sending, and payment recording. |
-| **Customer** | `customer1@brightloop.test` *(and up)* | `Customer@12345!` | Self-service customer portal: personal subscription details, billing history, and invoice access. |
+| **Customer 1** | `customer1@brightloop.test` *(Aarav Traders)* | `Customer@12345!` | Self-service customer portal: personal subscription details, billing history, and invoice access. |
+| **Customer 4** | `customer4@brightloop.test` *(Deccan Textiles)* | `Customer@12345!` | Self-service customer portal: 3 subscriptions (active/paused), 8 invoices, balance history. |
+| **Customers 2–12** | `customer2@brightloop.test` ... `customer12@brightloop.test` | `Customer@12345!` | Additional seeded customer accounts linked to client companies. |
