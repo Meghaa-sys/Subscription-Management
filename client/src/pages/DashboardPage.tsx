@@ -28,6 +28,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ dateFilter }) => {
   const [hoveredBarIndex, setHoveredBarIndex] = useState<number | null>(null);
   const [donutHoverSegment, setDonutHoverSegment] = useState<string | null>(null);
   const [productFilter, setProductFilter] = useState('all');
+  const [brightenedKpi, setBrightenedKpi] = useState<string | null>('mrr');
 
   const navigate = useNavigate();
   const { error } = useToast();
@@ -100,16 +101,30 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ dateFilter }) => {
         </div>
       </div>
 
-      {/* KPI Cards Row (4 cards with 2-3px lift on hover, sparklines, navigation) */}
+      {/* KPI Cards Row (Click to Brighten with Theme Glow & Navigate) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* 1. Active Subscriptions */}
         <div
-          onClick={() => navigate('/subscriptions')}
-          className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-card card-hover-lift cursor-pointer group transition-all"
+          onClick={() => setBrightenedKpi('subs')}
+          onDoubleClick={() => navigate('/subscriptions')}
+          className={`p-5 rounded-2xl border cursor-pointer select-none card-theme-brighten transition-all ${
+            brightenedKpi === 'subs'
+              ? 'is-brightened ring-2 ring-primary border-primary bg-gradient-to-b from-white via-[#FAF8FF] to-lavender-100/50 shadow-[0_14px_38px_-6px_rgba(81,69,229,0.25)]'
+              : 'bg-white border-slate-200/80 shadow-card hover:border-primary/40'
+          }`}
         >
+          {brightenedKpi === 'subs' && (
+            <div className="absolute top-0 left-6 right-6 h-0.5 rounded-b-full bg-primary animate-pulse" />
+          )}
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-slate-500">Active Subscriptions</span>
-            <div className="w-8 h-8 rounded-xl bg-lavender-100 text-primary flex items-center justify-center transition-colors group-hover:bg-primary group-hover:text-white">
+            <div
+              className={`w-8 h-8 rounded-xl flex items-center justify-center transition-colors ${
+                brightenedKpi === 'subs'
+                  ? 'bg-primary text-white shadow-xs'
+                  : 'bg-lavender-100 text-primary'
+              }`}
+            >
               <Repeat className="w-4 h-4" />
             </div>
           </div>
@@ -119,23 +134,45 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ dateFilter }) => {
             </span>
             <Sparkline data={kpis.activeSubscriptions.sparkline} color="#5145E5" />
           </div>
-          <div className="mt-3 flex items-center gap-1.5 text-xs">
+          <div className="mt-3 flex items-center justify-between text-xs">
             <span className="inline-flex items-center gap-0.5 text-emerald-600 font-semibold">
               <TrendingUp className="w-3.5 h-3.5" />
               +{kpis.activeSubscriptions.changePercent}%
             </span>
-            <span className="text-slate-400">{kpis.activeSubscriptions.periodLabel}</span>
+            <button
+              onClick={e => {
+                e.stopPropagation();
+                navigate('/subscriptions');
+              }}
+              className="text-[11px] text-primary hover:underline font-medium"
+            >
+              View list →
+            </button>
           </div>
         </div>
 
         {/* 2. Monthly Recurring Revenue (MRR) */}
         <div
-          onClick={() => navigate('/reports')}
-          className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-card card-hover-lift cursor-pointer group transition-all"
+          onClick={() => setBrightenedKpi('mrr')}
+          onDoubleClick={() => navigate('/reports')}
+          className={`p-5 rounded-2xl border cursor-pointer select-none card-theme-brighten transition-all ${
+            brightenedKpi === 'mrr'
+              ? 'is-brightened ring-2 ring-primary border-primary bg-gradient-to-b from-white via-[#FAF8FF] to-lavender-100/50 shadow-[0_14px_38px_-6px_rgba(81,69,229,0.25)]'
+              : 'bg-white border-slate-200/80 shadow-card hover:border-primary/40'
+          }`}
         >
+          {brightenedKpi === 'mrr' && (
+            <div className="absolute top-0 left-6 right-6 h-0.5 rounded-b-full bg-primary animate-pulse" />
+          )}
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-slate-500">Monthly Recurring Revenue (MRR)</span>
-            <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center transition-colors group-hover:bg-emerald-600 group-hover:text-white">
+            <div
+              className={`w-8 h-8 rounded-xl flex items-center justify-center transition-colors ${
+                brightenedKpi === 'mrr'
+                  ? 'bg-emerald-600 text-white shadow-xs'
+                  : 'bg-emerald-50 text-emerald-600'
+              }`}
+            >
               <DollarSign className="w-4 h-4" />
             </div>
           </div>
@@ -145,23 +182,45 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ dateFilter }) => {
             </span>
             <Sparkline data={kpis.mrr.sparkline} color="#10B981" />
           </div>
-          <div className="mt-3 flex items-center gap-1.5 text-xs">
+          <div className="mt-3 flex items-center justify-between text-xs">
             <span className="inline-flex items-center gap-0.5 text-emerald-600 font-semibold">
               <TrendingUp className="w-3.5 h-3.5" />
               +{kpis.mrr.changePercent}%
             </span>
-            <span className="text-slate-400">{kpis.mrr.periodLabel}</span>
+            <button
+              onClick={e => {
+                e.stopPropagation();
+                navigate('/reports');
+              }}
+              className="text-[11px] text-primary hover:underline font-medium"
+            >
+              Analytics →
+            </button>
           </div>
         </div>
 
         {/* 3. Revenue Collected */}
         <div
-          onClick={() => navigate('/payments')}
-          className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-card card-hover-lift cursor-pointer group transition-all"
+          onClick={() => setBrightenedKpi('rev')}
+          onDoubleClick={() => navigate('/payments')}
+          className={`p-5 rounded-2xl border cursor-pointer select-none card-theme-brighten transition-all ${
+            brightenedKpi === 'rev'
+              ? 'is-brightened ring-2 ring-primary border-primary bg-gradient-to-b from-white via-[#FAF8FF] to-lavender-100/50 shadow-[0_14px_38px_-6px_rgba(81,69,229,0.25)]'
+              : 'bg-white border-slate-200/80 shadow-card hover:border-primary/40'
+          }`}
         >
+          {brightenedKpi === 'rev' && (
+            <div className="absolute top-0 left-6 right-6 h-0.5 rounded-b-full bg-primary animate-pulse" />
+          )}
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-slate-500">Revenue Collected</span>
-            <div className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center transition-colors group-hover:bg-indigo-600 group-hover:text-white">
+            <div
+              className={`w-8 h-8 rounded-xl flex items-center justify-center transition-colors ${
+                brightenedKpi === 'rev'
+                  ? 'bg-primary text-white shadow-xs'
+                  : 'bg-indigo-50 text-indigo-600'
+              }`}
+            >
               <Sparkles className="w-4 h-4" />
             </div>
           </div>
@@ -171,23 +230,45 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ dateFilter }) => {
             </span>
             <Sparkline data={kpis.revenueCollected.sparkline} color="#6366F1" />
           </div>
-          <div className="mt-3 flex items-center gap-1.5 text-xs">
+          <div className="mt-3 flex items-center justify-between text-xs">
             <span className="inline-flex items-center gap-0.5 text-emerald-600 font-semibold">
               <TrendingUp className="w-3.5 h-3.5" />
               +{kpis.revenueCollected.changePercent}%
             </span>
-            <span className="text-slate-400">{kpis.revenueCollected.periodLabel}</span>
+            <button
+              onClick={e => {
+                e.stopPropagation();
+                navigate('/payments');
+              }}
+              className="text-[11px] text-primary hover:underline font-medium"
+            >
+              Ledger →
+            </button>
           </div>
         </div>
 
         {/* 4. Overdue Invoices */}
         <div
-          onClick={() => navigate('/invoices?status=overdue')}
-          className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-card card-hover-lift cursor-pointer group transition-all"
+          onClick={() => setBrightenedKpi('overdue')}
+          onDoubleClick={() => navigate('/invoices?status=overdue')}
+          className={`p-5 rounded-2xl border cursor-pointer select-none card-theme-brighten transition-all ${
+            brightenedKpi === 'overdue'
+              ? 'is-brightened ring-2 ring-primary border-primary bg-gradient-to-b from-white via-[#FAF8FF] to-lavender-100/50 shadow-[0_14px_38px_-6px_rgba(81,69,229,0.25)]'
+              : 'bg-white border-slate-200/80 shadow-card hover:border-primary/40'
+          }`}
         >
+          {brightenedKpi === 'overdue' && (
+            <div className="absolute top-0 left-6 right-6 h-0.5 rounded-b-full bg-primary animate-pulse" />
+          )}
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-slate-500">Overdue Invoices</span>
-            <div className="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center transition-colors group-hover:bg-rose-600 group-hover:text-white">
+            <div
+              className={`w-8 h-8 rounded-xl flex items-center justify-center transition-colors ${
+                brightenedKpi === 'overdue'
+                  ? 'bg-rose-600 text-white shadow-xs'
+                  : 'bg-rose-50 text-rose-600'
+              }`}
+            >
               <AlertCircle className="w-4 h-4" />
             </div>
           </div>
@@ -200,12 +281,20 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ dateFilter }) => {
             </div>
             <Sparkline data={kpis.overdueInvoices.sparkline} color="#F43F5E" />
           </div>
-          <div className="mt-3 flex items-center gap-1.5 text-xs">
+          <div className="mt-3 flex items-center justify-between text-xs">
             <span className="inline-flex items-center gap-0.5 text-emerald-600 font-semibold">
               <TrendingDown className="w-3.5 h-3.5" />
               {kpis.overdueInvoices.changePercent}%
             </span>
-            <span className="text-slate-400">{kpis.overdueInvoices.periodLabel}</span>
+            <button
+              onClick={e => {
+                e.stopPropagation();
+                navigate('/invoices?status=overdue');
+              }}
+              className="text-[11px] text-primary hover:underline font-medium"
+            >
+              Resolve →
+            </button>
           </div>
         </div>
       </div>

@@ -279,6 +279,24 @@
   ],
   "subscriptions": [
     {
+      "id": "sub_mvvyfrvp",
+      "customerId": "cust_01",
+      "planId": "plan_shield_addon",
+      "quotationId": "qt_002",
+      "quantity": 1,
+      "billingCycle": "monthly",
+      "unitPrice": 399,
+      "seatsAmount": 0,
+      "amount": 431.92,
+      "status": "active",
+      "startDate": "2026-10-31T05:22:36.901Z",
+      "currentPeriodStart": "2026-10-31T05:22:36.901Z",
+      "currentPeriodEnd": "2026-11-30T05:22:36.901Z",
+      "nextRenewal": "2026-11-30",
+      "autoRenew": true,
+      "daysRemaining": 30
+    },
+    {
       "id": "sub_001",
       "customerId": "cust_01",
       "planId": "plan_growth_mo",
@@ -383,6 +401,29 @@
     }
   ],
   "invoices": [
+    {
+      "id": "inv_mvvyfrvp",
+      "invoiceNumber": "INV-2026-011",
+      "customerId": "cust_01",
+      "subscriptionId": "sub_mvvyfrvp",
+      "issueDate": "2026-10-31",
+      "dueDate": "2026-11-14",
+      "status": "pending",
+      "lineItems": [
+        {
+          "description": "Enterprise Shield Security Upgrade",
+          "quantity": 1,
+          "unitPrice": 399,
+          "amount": 399
+        }
+      ],
+      "subtotal": 399,
+      "discountAmount": 0,
+      "taxAmount": 32.92,
+      "total": 431.92,
+      "paidAt": null,
+      "notes": "Generated automatically upon acceptance of Quotation QUO-2026-043."
+    },
     {
       "id": "inv_1001",
       "invoiceNumber": "INV-2026-001",
@@ -614,7 +655,7 @@
       "customerId": "cust_01",
       "customerName": "Acme Corporation",
       "contactEmail": "elena@acme.corp",
-      "status": "sent",
+      "status": "accepted",
       "items": [
         {
           "planId": "plan_shield_addon",
@@ -729,6 +770,15 @@
     }
   ],
   "auditLogs": [
+    {
+      "id": "log_1793424156902_3anl",
+      "action": "QUOTATION_CONVERTED",
+      "entityType": "quotation",
+      "entityId": "qt_002",
+      "actor": "Megha (Admin)",
+      "details": "Converted quotation QUO-2026-043 into subscription sub_mvvyfrvp & invoice INV-2026-011",
+      "timestamp": "2026-10-31T05:22:36.902Z"
+    },
     {
       "id": "log_001",
       "action": "INVOICE_GENERATED",
