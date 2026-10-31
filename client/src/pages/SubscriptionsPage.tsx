@@ -1,114 +1,73 @@
-import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import {
-  Repeat,
-  Plus,
-  Play,
-  Pause,
-  XCircle,
-  Filter,
-  Calendar,
-  AlertTriangle,
-  User,
-  X,
-} from 'lucide-react';
-import { api } from '../api/client';
-import { Subscription, Customer, Plan } from '../types';
+import React, { useCallback, useState } from 'react';
+import { Plus, Play, Pause, XCircle, Filter, AlertTriangle, Search, X } from 'lucide-react';
+import { api, formatMoney } from '../api/client';
+import { NewSubscription, Subscription } from '../types';
+import { LoadMore } from '../components/LoadMore';
 import { StatusBadge } from '../components/StatusBadge';
+import { EMPTY_SUBSCRIPTION, SubscriptionFormFields } from '../components/SubscriptionFormFields';
 import { useToast } from '../context/ToastContext';
+import { useDebouncedValue } from '../hooks/useDebouncedValue';
+import { usePagedList } from '../hooks/usePagedList';
+
+const NOT_YET_ACTIVE = ['draft', 'quotation', 'confirmed'];
 
 export const SubscriptionsPage: React.FC = () => {
-  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
-  const [customers, setCustomers] = useState<Customer[]>([]);
-  const [plans, setPlans] = useState<Plan[]>([]);
-  const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('all');
+  const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search);
 
   // Modals
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [cancelModalSub, setCancelModalSub] = useState<Subscription | null>(null);
-  const [cancelReason, setCancelReason] = useState('');
+  const [closeModalSub, setCloseModalSub] = useState<Subscription | null>(null);
+  const [closeReason, setCloseReason] = useState('');
+  const [form, setForm] = useState<NewSubscription>(EMPTY_SUBSCRIPTION);
 
-  // Form State
-  const [selectedCustomerId, setSelectedCustomerId] = useState('');
-  const [selectedPlanId, setSelectedPlanId] = useState('');
-  const [billingCycle, setBillingCycle] = useState('monthly');
-  const [quantity, setQuantity] = useState(1);
-
-  const [searchParams] = useSearchParams();
   const { success, error } = useToast();
 
-  const loadData = async () => {
+  const load = useCallback(
+    (pageNumber: number) => api.getSubscriptions({ status: statusFilter, search: debouncedSearch, pageNumber }),
+    [statusFilter, debouncedSearch]
+  );
+  const {
+    rows: subscriptions,
+    total,
+    loading,
+    loadingMore,
+    reload,
+    loadMore,
+  } = usePagedList(load, message => error('Failed to load subscriptions', message));
+
+  const runAction = async (action: Promise<unknown>, done: string, failed: string) => {
     try {
-      setLoading(true);
-      const [subs, custs, plns] = await Promise.all([
-        api.getSubscriptions({ status: statusFilter }),
-        api.getCustomers(),
-        api.getPlans(),
-      ]);
-      setSubscriptions(subs);
-      setCustomers(custs);
-      setPlans(plns);
-      if (custs.length > 0 && !selectedCustomerId) setSelectedCustomerId(custs[0].id);
-      if (plns.length > 0 && !selectedPlanId) setSelectedPlanId(plns[0].id);
+      await action;
+      success(done, 'Saved.');
+      reload();
     } catch (err: any) {
-      error('Failed to load subscriptions', err.message);
-    } finally {
-      setLoading(false);
+      error(failed, err.message);
     }
   };
 
-  useEffect(() => {
-    loadData();
-  }, [statusFilter]);
-
-  const handlePause = async (id: string) => {
+  const handleConfirmClose = async () => {
+    if (!closeModalSub) return;
     try {
-      await api.pauseSubscription(id);
-      success('Subscription Paused', `Subscription #${id} has been paused.`);
-      loadData();
+      await api.closeSubscription(closeModalSub.id, closeReason);
+      success('Subscription Closed', `${closeModalSub.number} has been closed.`);
+      setCloseModalSub(null);
+      setCloseReason('');
+      reload();
     } catch (err: any) {
-      error('Failed to pause', err.message);
-    }
-  };
-
-  const handleResume = async (id: string) => {
-    try {
-      await api.resumeSubscription(id);
-      success('Subscription Resumed', `Subscription #${id} is now active.`);
-      loadData();
-    } catch (err: any) {
-      error('Failed to resume', err.message);
-    }
-  };
-
-  const handleConfirmCancel = async () => {
-    if (!cancelModalSub) return;
-    try {
-      await api.cancelSubscription(cancelModalSub.id, cancelReason);
-      success('Subscription Cancelled', `Subscription #${cancelModalSub.id} has been cancelled.`);
-      setCancelModalSub(null);
-      setCancelReason('');
-      loadData();
-    } catch (err: any) {
-      error('Failed to cancel', err.message);
+      error('Failed to close', err.message);
     }
   };
 
   const handleCreateSubscription = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedCustomerId || !selectedPlanId) return;
-
     try {
-      await api.createSubscription({
-        customerId: selectedCustomerId,
-        planId: selectedPlanId,
-        billingCycle,
-        quantity: Number(quantity),
-      });
-      success('Subscription Created', 'Active subscription and initial invoice generated.');
+      const created = await api.createSubscription(form);
+      success('Subscription Active', `${created.number} is active. Its first invoice comes from the next billing run.`);
       setIsAddModalOpen(false);
-      loadData();
+      setForm(EMPTY_SUBSCRIPTION);
+      reload();
     } catch (err: any) {
       error('Failed to create subscription', err.message);
     }
@@ -121,7 +80,7 @@ export const SubscriptionsPage: React.FC = () => {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Subscriptions</h1>
           <p className="text-sm text-slate-500 mt-1">
-            Active recurring contracts, renewal monitoring, and status management.
+            Recurring contracts, billing dates, and status management.
           </p>
         </div>
 
@@ -135,11 +94,12 @@ export const SubscriptionsPage: React.FC = () => {
               className="text-xs font-medium text-slate-700 bg-transparent focus:outline-hidden"
             >
               <option value="all">All States</option>
+              <option value="draft">Draft</option>
+              <option value="quotation">Quotation</option>
+              <option value="confirmed">Confirmed</option>
               <option value="active">Active</option>
-              <option value="trialing">Trialing</option>
               <option value="paused">Paused</option>
-              <option value="past_due">Past Due</option>
-              <option value="cancelled">Cancelled</option>
+              <option value="closed">Closed</option>
             </select>
           </div>
 
@@ -153,6 +113,20 @@ export const SubscriptionsPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Search Bar */}
+      <div className="bg-white p-3 rounded-2xl border border-slate-200/80 shadow-xs max-w-md">
+        <div className="relative">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Search by subscription # or customer..."
+            className="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden focus:bg-white"
+          />
+        </div>
+      </div>
+
       {/* Subscriptions Table */}
       <div className="bg-white rounded-2xl border border-slate-200/80 shadow-card overflow-hidden">
         <div className="overflow-x-auto">
@@ -163,7 +137,7 @@ export const SubscriptionsPage: React.FC = () => {
                 <th className="py-3.5 px-6">Customer</th>
                 <th className="py-3.5 px-6">Plan &amp; Cycle</th>
                 <th className="py-3.5 px-6">Billing Amount</th>
-                <th className="py-3.5 px-6">Next Renewal</th>
+                <th className="py-3.5 px-6">Next Billing</th>
                 <th className="py-3.5 px-6">Status</th>
                 <th className="py-3.5 px-6 text-right">Actions</th>
               </tr>
@@ -185,13 +159,13 @@ export const SubscriptionsPage: React.FC = () => {
                 subscriptions.map(sub => (
                   <tr key={sub.id} className="hover:bg-slate-50/80 transition-colors">
                     <td className="py-3.5 px-6 font-mono font-medium text-slate-900">
-                      #{sub.id}
+                      {sub.number}
                     </td>
                     <td className="py-3.5 px-6">
                       <div className="flex items-center gap-3">
                         <img
-                          src={sub.customerAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80'}
-                          alt={sub.customerName}
+                          src={sub.customerAvatar}
+                          alt=""
                           className="w-8 h-8 rounded-full object-cover border border-slate-200"
                         />
                         <div>
@@ -205,26 +179,43 @@ export const SubscriptionsPage: React.FC = () => {
                     <td className="py-3.5 px-6">
                       <p className="font-medium text-slate-900">{sub.planName}</p>
                       <p className="text-xs text-slate-400 capitalize">
-                        {sub.billingCycle} • {sub.quantity} {sub.quantity === 1 ? 'seat' : 'seats'}
+                        {sub.billingCycle} • Qty {sub.quantity}
                       </p>
                     </td>
                     <td className="py-3.5 px-6 font-mono font-bold text-slate-900">
-                      ${sub.amount.toLocaleString()}
+                      ${formatMoney(sub.amount)}
                     </td>
                     <td className="py-3.5 px-6 text-xs">
                       <p className="font-medium text-slate-800">{sub.nextRenewal}</p>
-                      <p className="text-[11px] text-slate-400">
-                        {sub.daysRemaining > 0 ? `${sub.daysRemaining} days left` : 'Due today/overdue'}
-                      </p>
+                      {sub.status === 'active' && (
+                        <p className="text-[11px] text-slate-400">
+                          {sub.daysRemaining > 0
+                            ? `in ${sub.daysRemaining} ${sub.daysRemaining === 1 ? 'day' : 'days'}`
+                            : 'Due for billing'}
+                        </p>
+                      )}
                     </td>
                     <td className="py-3.5 px-6">
                       <StatusBadge status={sub.status} size="sm" />
                     </td>
                     <td className="py-3.5 px-6 text-right">
                       <div className="flex items-center justify-end gap-1.5">
+                        {NOT_YET_ACTIVE.includes(sub.status) && (
+                          <button
+                            onClick={() =>
+                              runAction(api.activateSubscription(sub.id), 'Subscription Activated', 'Failed to activate')
+                            }
+                            className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
+                            title="Activate Subscription"
+                          >
+                            <Play className="w-4 h-4" />
+                          </button>
+                        )}
                         {sub.status === 'active' && (
                           <button
-                            onClick={() => handlePause(sub.id)}
+                            onClick={() =>
+                              runAction(api.pauseSubscription(sub.id), 'Subscription Paused', 'Failed to pause')
+                            }
                             className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
                             title="Pause Subscription"
                           >
@@ -233,18 +224,20 @@ export const SubscriptionsPage: React.FC = () => {
                         )}
                         {sub.status === 'paused' && (
                           <button
-                            onClick={() => handleResume(sub.id)}
+                            onClick={() =>
+                              runAction(api.resumeSubscription(sub.id), 'Subscription Resumed', 'Failed to resume')
+                            }
                             className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
                             title="Resume Subscription"
                           >
                             <Play className="w-4 h-4" />
                           </button>
                         )}
-                        {sub.status !== 'cancelled' && (
+                        {(sub.status === 'active' || sub.status === 'paused') && (
                           <button
-                            onClick={() => setCancelModalSub(sub)}
+                            onClick={() => setCloseModalSub(sub)}
                             className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
-                            title="Cancel Subscription"
+                            title="Close Subscription"
                           >
                             <XCircle className="w-4 h-4" />
                           </button>
@@ -257,6 +250,9 @@ export const SubscriptionsPage: React.FC = () => {
             </tbody>
           </table>
         </div>
+        {!loading && (
+          <LoadMore shown={subscriptions.length} total={total} loading={loadingMore} onClick={loadMore} />
+        )}
       </div>
 
       {/* New Subscription Modal */}
@@ -274,61 +270,7 @@ export const SubscriptionsPage: React.FC = () => {
             </div>
 
             <form onSubmit={handleCreateSubscription} className="space-y-4">
-              <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">Customer *</label>
-                <select
-                  required
-                  value={selectedCustomerId}
-                  onChange={e => setSelectedCustomerId(e.target.value)}
-                  className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden"
-                >
-                  {customers.map(c => (
-                    <option key={c.id} value={c.id}>
-                      {c.name} ({c.company})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">Pricing Plan *</label>
-                <select
-                  required
-                  value={selectedPlanId}
-                  onChange={e => setSelectedPlanId(e.target.value)}
-                  className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden"
-                >
-                  {plans.map(p => (
-                    <option key={p.id} value={p.id}>
-                      {p.name} - ${p.price}/{p.billingInterval}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1">Billing Cycle</label>
-                  <select
-                    value={billingCycle}
-                    onChange={e => setBillingCycle(e.target.value)}
-                    className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden"
-                  >
-                    <option value="monthly">Monthly</option>
-                    <option value="annual">Annual (Prepaid)</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1">Quantity / Seats</label>
-                  <input
-                    type="number"
-                    min={1}
-                    value={quantity}
-                    onChange={e => setQuantity(Math.max(1, Number(e.target.value)))}
-                    className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden"
-                  />
-                </div>
-              </div>
+              <SubscriptionFormFields value={form} onChange={setForm} />
 
               <div className="pt-4 flex justify-end gap-3 border-t border-slate-100">
                 <button
@@ -350,8 +292,8 @@ export const SubscriptionsPage: React.FC = () => {
         </div>
       )}
 
-      {/* Cancel Confirmation Modal */}
-      {cancelModalSub && (
+      {/* Close Confirmation Modal */}
+      {closeModalSub && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in">
           <div className="w-full max-w-md bg-white rounded-2xl shadow-modal border border-slate-200 p-6 space-y-4">
             <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mx-auto">
@@ -359,21 +301,22 @@ export const SubscriptionsPage: React.FC = () => {
             </div>
             <div className="text-center">
               <h3 className="text-base font-bold text-slate-900">
-                Cancel Subscription #{cancelModalSub.id}?
+                Close {closeModalSub.number}?
               </h3>
               <p className="text-xs text-slate-500 mt-1">
-                This will prevent future automated billing. Access will continue until the end of the current cycle.
+                Billing stops for good. A closed subscription cannot be reopened.
               </p>
             </div>
 
             <div>
               <label className="block text-xs font-medium text-slate-700 mb-1">
-                Reason for cancellation
+                Reason for closing
               </label>
               <textarea
                 rows={2}
-                value={cancelReason}
-                onChange={e => setCancelReason(e.target.value)}
+                maxLength={255}
+                value={closeReason}
+                onChange={e => setCloseReason(e.target.value)}
                 placeholder="e.g. Project finished, switched plan, budget constraints"
                 className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden"
               />
@@ -382,17 +325,17 @@ export const SubscriptionsPage: React.FC = () => {
             <div className="pt-2 flex justify-end gap-3">
               <button
                 type="button"
-                onClick={() => setCancelModalSub(null)}
+                onClick={() => setCloseModalSub(null)}
                 className="px-4 py-2 text-xs font-medium text-slate-600 hover:text-slate-800"
               >
-                Keep Active
+                Keep Open
               </button>
               <button
                 type="button"
-                onClick={handleConfirmCancel}
+                onClick={handleConfirmClose}
                 className="px-4 py-2 text-xs font-semibold text-white bg-rose-600 rounded-xl hover:bg-rose-700 shadow-sm"
               >
-                Confirm Cancellation
+                Confirm Close
               </button>
             </div>
           </div>

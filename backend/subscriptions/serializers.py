@@ -107,11 +107,13 @@ class SubscriptionListSerializer(serializers.ModelSerializer):
     """Row shown in subscription tables."""
 
     customer_name = serializers.CharField(source="customer.name", read_only=True)
+    customer_email = serializers.CharField(source="customer.email", read_only=True)
     plan_name = serializers.CharField(source="plan.name", read_only=True)
     billing_period = serializers.CharField(source="plan.billing_period", read_only=True)
     salesperson_name = serializers.CharField(source="salesperson.name", read_only=True, default=None)
     payment_term_name = serializers.CharField(source="payment_term.name", read_only=True, default=None)
     status_display = serializers.CharField(source="get_status_display", read_only=True)
+    quantity = serializers.SerializerMethodField()
     subtotal = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
     tax_total = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
     total = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
@@ -123,6 +125,8 @@ class SubscriptionListSerializer(serializers.ModelSerializer):
             "number",
             "customer",
             "customer_name",
+            "customer_email",
+            "quantity",
             "plan",
             "plan_name",
             "billing_period",
@@ -143,6 +147,9 @@ class SubscriptionListSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
         read_only_fields = fields
+
+    def get_quantity(self, obj) -> int:
+        return sum(line.quantity for line in obj.lines.all())
 
 
 class SubscriptionDetailSerializer(SubscriptionListSerializer):

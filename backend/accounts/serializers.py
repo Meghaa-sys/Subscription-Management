@@ -152,7 +152,12 @@ class StaffUserSerializer(serializers.ModelSerializer):
 
 
 class CustomerSerializer(serializers.ModelSerializer):
+    """The totals come from the viewset's annotations, so they are left out on create."""
+
     has_login = serializers.SerializerMethodField()
+    total_paid = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
+    balance = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
+    active_subscriptions = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Customer
@@ -165,6 +170,9 @@ class CustomerSerializer(serializers.ModelSerializer):
             "billing_address",
             "tax_id",
             "has_login",
+            "total_paid",
+            "balance",
+            "active_subscriptions",
             "created_at",
         ]
         read_only_fields = ["id", "has_login", "created_at"]

@@ -1,4 +1,6 @@
 """Authentication, profile and staff endpoints."""
+from django.db.models import Count, DecimalField, F, OuterRef, Subquery, Sum
+from django.db.models.functions import Coalesce
 from drf_spectacular.utils import OpenApiResponse, extend_schema, extend_schema_view
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
@@ -8,7 +10,10 @@ from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
+from billing.models import Invoice, Payment
+from common.money import ZERO
 from common.schema import DetailSerializer
+from subscriptions.models import Subscription
 
 from . import services
 from .models import Customer, User
@@ -27,6 +32,40 @@ from .serializers import (
 )
 
 FORGOT_PASSWORD_MESSAGE = "If an account exists for this email, a reset link has been sent."
+MONEY_FIELD = DecimalField(max_digits=12, decimal_places=2)
+
+
+def customer_totals(queryset):
+    """
+    Add total_paid, balance and active_subscriptions to customers. These are subqueries
+    rather than joins, because joining payments and subscriptions together multiplies rows.
+    """
+    paid = (
+        Payment.objects.filter(invoice__customer=OuterRef("pk"))
+        .order_by()
+        .values("invoice__customer")
+        .annotate(total=Sum("amount"))
+        .values("total")
+    )
+    owed = (
+        Invoice.objects.filter(customer=OuterRef("pk"), status=Invoice.Status.CONFIRMED)
+        .order_by()
+        .values("customer")
+        .annotate(total=Sum(F("total") - F("amount_paid"), output_field=MONEY_FIELD))
+        .values("total")
+    )
+    active = (
+        Subscription.objects.filter(customer=OuterRef("pk"), status=Subscription.Status.ACTIVE)
+        .order_by()
+        .values("customer")
+        .annotate(total=Count("id"))
+        .values("total")
+    )
+    return queryset.annotate(
+        total_paid=Coalesce(Subquery(paid, output_field=MONEY_FIELD), ZERO, output_field=MONEY_FIELD),
+        balance=Coalesce(Subquery(owed, output_field=MONEY_FIELD), ZERO, output_field=MONEY_FIELD),
+        active_subscriptions=Coalesce(Subquery(active), 0),
+    )
 
 
 class PublicAuthView(APIView):
@@ -134,11 +173,11 @@ class ResetPasswordView(PublicAuthView):
 class CustomerViewSet(viewsets.ModelViewSet):
     """Customer records, managed by staff and admin."""
 
-    queryset = Customer.objects.all()
+    queryset = customer_totals(Customer.objects.all())
     serializer_class = CustomerSerializer
     permission_classes = [IsStaffOrAdmin]
     search_fields = ["name", "company", "email", "phone"]
-    ordering_fields = ["id", "name", "company", "created_at"]
+    ordering_fields = ["id", "name", "company", "created_at", "total_paid", "balance"]
     ordering = ["-id"]
 
     def perform_destroy(self, instance):

@@ -5,6 +5,9 @@ from django.test import TestCase
 from rest_framework.test import APIClient
 
 from accounts.models import Customer, User
+from billing.models import Invoice, Payment
+from common.testing import make_plan, make_product, make_subscription
+from subscriptions.models import Subscription
 
 from .models import Product, ProductVariant, RecurringPlan, Tax
 
@@ -197,3 +200,50 @@ class CustomerApiTests(CatalogueTestCase):
         Customer.objects.create(name="Zen", email="z@example.com")
         self.client.force_authenticate(self.staff)
         self.assertEqual(self.client.get("/api/customers/?search=acme").data["count"], 1)
+
+    def test_totals_are_not_multiplied_by_other_rows(self):
+        """Two subscriptions and two payments must not inflate each other's sums."""
+        record = Customer.objects.create(name="Acme", email="a@example.com")
+        Customer.objects.create(name="Zen", email="z@example.com")
+        plan = make_plan()
+        first = make_subscription(record, plan, [(make_product(), 2)])
+        make_subscription(record, plan, [(make_product(name="Support"), 1)])
+        make_subscription(record, plan, [], status=Subscription.Status.CLOSED)
+
+        def invoice(**fields):
+            return Invoice.objects.create(
+                subscription=first,
+                customer=record,
+                period_end=date(2026, 1, 31),
+                invoice_date=date(2026, 1, 1),
+                due_date=date(2026, 1, 15),
+                **fields,
+            )
+
+        paid = invoice(
+            period_start=date(2026, 1, 1), status=Invoice.Status.PAID, total="300.00", amount_paid="300.00"
+        )
+        for amount in ("100.00", "200.00"):
+            Payment.objects.create(
+                invoice=paid,
+                method=Payment.Method.CASH,
+                amount=amount,
+                payment_date=date(2026, 1, 2),
+                recorded_by=self.staff,
+            )
+        invoice(
+            period_start=date(2026, 2, 1),
+            status=Invoice.Status.CONFIRMED,
+            total="500.00",
+            amount_paid="150.00",
+        )
+        invoice(period_start=date(2026, 3, 1), status=Invoice.Status.DRAFT, total="999.00")
+
+        self.client.force_authenticate(self.staff)
+        rows = self.client.get("/api/customers/?ordering=-total_paid").data["results"]
+        self.assertEqual(rows[0]["name"], "Acme")
+        self.assertEqual(rows[0]["total_paid"], "300.00")
+        self.assertEqual(rows[0]["balance"], "350.00")
+        self.assertEqual(rows[0]["active_subscriptions"], 2)
+        self.assertEqual(rows[1]["total_paid"], "0.00")
+        self.assertEqual(rows[1]["active_subscriptions"], 0)

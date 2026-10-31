@@ -1,7 +1,13 @@
+// The shapes the pages work with. api/client.ts builds them from the Django API.
+
+export interface Paged<T> {
+  count: number;
+  results: T[];
+}
+
 export interface Customer {
   id: string;
   name: string;
-  contactName: string;
   email: string;
   phone?: string;
   company: string;
@@ -13,7 +19,6 @@ export interface Customer {
   createdAt: string;
   subscriptions?: Subscription[];
   invoices?: Invoice[];
-  payments?: Payment[];
 }
 
 export interface Product {
@@ -21,31 +26,30 @@ export interface Product {
   name: string;
   description: string;
   category: string;
-  status: 'active' | 'archived';
-  icon: string;
+  productType: 'service' | 'goods' | 'addon';
+  salesPrice: number;
   features: string[];
 }
 
+export type BillingInterval = 'daily' | 'weekly' | 'monthly' | 'annual';
+
 export interface Plan {
   id: string;
-  productId: string;
   name: string;
-  billingInterval: 'monthly' | 'annual';
+  billingInterval: BillingInterval;
   price: number;
-  currency: string;
-  seatBased: boolean;
-  pricePerSeat: number;
+  minQuantity: number;
   activeSubscribers: number;
   features: string[];
 }
 
-export interface QuotationItem {
-  planId: string;
+export interface PaymentTerm {
+  id: string;
   name: string;
-  quantity: number;
-  unitPrice: number;
-  total: number;
+  dueDays: number;
 }
+
+export type QuotationStatus = 'draft' | 'quotation' | 'confirmed';
 
 export interface Quotation {
   id: string;
@@ -53,43 +57,41 @@ export interface Quotation {
   customerId: string;
   customerName: string;
   contactEmail: string;
-  status: 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired';
-  items: QuotationItem[];
+  status: QuotationStatus;
   subtotal: number;
-  discountCode?: string | null;
-  discountAmount: number;
-  taxRate: number;
-  taxAmount: number;
   total: number;
   validUntil: string;
-  notes?: string;
   createdAt: string;
 }
 
+export type SubscriptionStatus = QuotationStatus | 'active' | 'paused' | 'closed';
+
 export interface Subscription {
   id: string;
+  number: string;
   customerId: string;
   customerName?: string;
   customerEmail?: string;
   customerAvatar?: string;
   planId: string;
   planName?: string;
-  quotationId?: string;
   quantity: number;
-  billingCycle: 'monthly' | 'annual';
-  unitPrice: number;
-  seatsAmount: number;
+  billingCycle: BillingInterval;
   amount: number;
-  status: 'active' | 'trialing' | 'paused' | 'past_due' | 'cancelled';
+  status: SubscriptionStatus;
   startDate: string;
-  currentPeriodStart: string;
-  currentPeriodEnd: string;
   nextRenewal: string;
-  autoRenew: boolean;
   daysRemaining: number;
-  pausedAt?: string | null;
-  cancelledAt?: string;
-  cancelReason?: string;
+}
+
+export interface NewSubscription {
+  customerId: string;
+  planId: string;
+  productId: string;
+  quantity: number;
+  paymentTermId?: string;
+  discountId?: string;
+  notes?: string;
 }
 
 export interface InvoiceLineItem {
@@ -99,28 +101,39 @@ export interface InvoiceLineItem {
   amount: number;
 }
 
+export type InvoiceStatus = 'draft' | 'pending' | 'overdue' | 'paid' | 'void';
+
 export interface Invoice {
   id: string;
   invoiceNumber: string;
   customerId: string;
   customerName?: string;
   customerEmail?: string;
-  customerAvatar?: string;
   customerCompany?: string;
   customerAddress?: string;
   subscriptionId?: string;
   issueDate: string;
   dueDate: string;
-  status: 'paid' | 'pending' | 'overdue' | 'void';
+  status: InvoiceStatus;
   lineItems: InvoiceLineItem[];
   subtotal: number;
   discountAmount: number;
   taxAmount: number;
   total: number;
+  balance: number;
   paidAt?: string | null;
   paymentMethod?: string;
-  notes?: string;
 }
+
+export type PaymentMethod = 'cash' | 'bank_transfer' | 'card' | 'upi' | 'cheque';
+
+export const PAYMENT_METHODS: Array<{ value: PaymentMethod; label: string }> = [
+  { value: 'bank_transfer', label: 'Bank transfer' },
+  { value: 'upi', label: 'UPI' },
+  { value: 'card', label: 'Card' },
+  { value: 'cash', label: 'Cash' },
+  { value: 'cheque', label: 'Cheque' },
+];
 
 export interface Payment {
   id: string;
@@ -129,25 +142,19 @@ export interface Payment {
   invoiceNumber?: string;
   customerId: string;
   customerName?: string;
-  customerEmail?: string;
   amount: number;
-  currency: string;
-  paymentMethod: 'credit_card' | 'bank_transfer' | 'wire' | 'stripe';
-  status: 'successful' | 'pending' | 'failed';
-  failureReason?: string;
-  transactionId: string;
-  createdAt: string;
+  paymentMethod: string;
+  note: string;
+  paymentDate: string;
 }
 
 export interface Discount {
   id: string;
-  code: string;
   name: string;
-  type: 'percentage' | 'fixed';
+  type: 'percent' | 'fixed';
   value: number;
-  currency: string;
   validUntil: string;
-  usageLimit: number;
+  usageLimit: number | null;
   usedCount: number;
   status: 'active' | 'expired';
 }
@@ -156,9 +163,7 @@ export interface Tax {
   id: string;
   name: string;
   rate: number;
-  country: string;
-  region: string;
-  taxType: 'inclusive' | 'exclusive';
+  taxType: 'percent' | 'fixed';
   status: 'active' | 'inactive';
 }
 
@@ -166,34 +171,22 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: 'Administrator' | 'Finance Staff' | 'Support Staff';
+  role: string;
   avatar: string;
   status: 'active' | 'inactive';
-  department: string;
-  lastLogin: string;
+  joined: string;
 }
 
-export interface SystemSettings {
-  companyName: string;
-  legalName: string;
-  supportEmail: string;
-  contactPhone: string;
-  currency: string;
-  currencySymbol: string;
-  timezone: string;
-  taxId: string;
-  address: string;
-  invoicePrefix: string;
-  paymentTermsDays: number;
-  gracePeriodDays: number;
-  autoRenewDefault: boolean;
+export interface CurrentUser {
+  id: number;
+  name: string;
+  email: string;
+  role: 'admin' | 'staff' | 'customer';
 }
 
-export interface AuditLog {
+export interface ActivityItem {
   id: string;
   action: string;
-  entityType: string;
-  entityId: string;
   actor: string;
   details: string;
   timestamp: string;
@@ -201,64 +194,33 @@ export interface AuditLog {
 
 export interface DashboardStats {
   kpis: {
-    activeSubscriptions: {
-      value: number;
-      changePercent: number;
-      isPositive: boolean;
-      periodLabel: string;
-      sparkline: number[];
-    };
-    mrr: {
-      value: number;
-      changePercent: number;
-      isPositive: boolean;
-      periodLabel: string;
-      sparkline: number[];
-    };
-    revenueCollected: {
-      value: number;
-      changePercent: number;
-      isPositive: boolean;
-      periodLabel: string;
-      sparkline: number[];
-    };
-    overdueInvoices: {
-      value: number;
-      amount: number;
-      changePercent: number;
-      isPositive: boolean;
-      periodLabel: string;
-      sparkline: number[];
-    };
+    activeSubscriptions: { value: number };
+    mrr: { value: number };
+    revenueCollected: { value: number };
+    overdueInvoices: { value: number; amount: number };
   };
-  revenueChart: Array<{
-    period: string;
-    collected: number;
-    outstanding: number;
-    total: number;
-  }>;
+  revenueChart: Array<{ period: string; collected: number }>;
   subscriptionDonut: {
-    data: Array<{
-      name: string;
-      count: number;
-      percentage: number;
-      color: string;
-    }>;
+    data: Array<{ name: string; count: number; percentage: number; color: string }>;
     total: number;
   };
   recentInvoices: Invoice[];
-  upcomingRenewals: Array<{
-    id: string;
-    customerId: string;
-    customerName: string;
-    customerAvatar: string;
-    planName: string;
-    renewalDate: string;
-    amount: number;
-    billingCycle: string;
-    daysRemaining: number;
-    status: string;
-  }>;
+  upcomingRenewals: Subscription[];
   mrr: number;
   arr: number;
+}
+
+export interface ReportsData {
+  summary: {
+    activeSubscriptions: number;
+    revenueCollected: number;
+    outstanding: number;
+    overdueCount: number;
+    overdueAmount: number;
+    mrr: number;
+    arr: number;
+  };
+  revenue: Array<{ month: string; amount: number }>;
+  byStatus: Array<{ status: string; label: string; count: number }>;
+  overdueBuckets: Array<{ label: string; count: number; amount: number }>;
 }

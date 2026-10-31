@@ -1,51 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import {
-  FileSpreadsheet,
-  Plus,
-  CheckCircle,
-  Clock,
-  ArrowRight,
-  Sparkles,
-  ChevronRight,
-  Percent,
-  X,
-} from 'lucide-react';
+import { Plus, Sparkles, X } from 'lucide-react';
 import { api } from '../api/client';
-import { Quotation, Customer, Plan } from '../types';
+import { NewSubscription, Quotation } from '../types';
 import { StatusBadge } from '../components/StatusBadge';
+import { EMPTY_SUBSCRIPTION, SubscriptionFormFields } from '../components/SubscriptionFormFields';
 import { useToast } from '../context/ToastContext';
 
 export const QuotationsPage: React.FC = () => {
   const [quotations, setQuotations] = useState<Quotation[]>([]);
-  const [customers, setCustomers] = useState<Customer[]>([]);
-  const [plans, setPlans] = useState<Plan[]>([]);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [convertingId, setConvertingId] = useState<string | null>(null);
-
-  // Form State
-  const [selectedCustomerId, setSelectedCustomerId] = useState('');
-  const [selectedPlanId, setSelectedPlanId] = useState('');
-  const [quantity, setQuantity] = useState(1);
-  const [discountCode, setDiscountCode] = useState('');
-  const [taxRate, setTaxRate] = useState(8.25);
-  const [notes, setNotes] = useState('');
+  const [form, setForm] = useState<NewSubscription>(EMPTY_SUBSCRIPTION);
 
   const { success, error } = useToast();
 
   const loadData = async () => {
     try {
       setLoading(true);
-      const [quots, custs, plns] = await Promise.all([
-        api.getQuotations(),
-        api.getCustomers(),
-        api.getPlans(),
-      ]);
-      setQuotations(quots);
-      setCustomers(custs);
-      setPlans(plns);
-      if (custs.length > 0 && !selectedCustomerId) setSelectedCustomerId(custs[0].id);
-      if (plns.length > 0 && !selectedPlanId) setSelectedPlanId(plns[0].id);
+      const data = await api.getQuotations();
+      setQuotations(data.results);
+      setTotal(data.count);
     } catch (err: any) {
       error('Failed to load quotations', err.message);
     } finally {
@@ -60,11 +36,8 @@ export const QuotationsPage: React.FC = () => {
   const handleConvertQuotation = async (id: string, quoteNumber: string) => {
     try {
       setConvertingId(id);
-      const res = await api.convertQuotation(id);
-      success(
-        'Quotation Converted!',
-        `${quoteNumber} converted to active Subscription #${res.subscription.id} and Invoice #${res.invoice.invoiceNumber}.`
-      );
+      await api.convertQuotation(id);
+      success('Quotation Converted', `${quoteNumber} is now active. Its first invoice comes from the next billing run.`);
       loadData();
     } catch (err: any) {
       error('Conversion failed', err.message);
@@ -75,32 +48,11 @@ export const QuotationsPage: React.FC = () => {
 
   const handleCreateQuotation = async (e: React.FormEvent) => {
     e.preventDefault();
-    const plan = plans.find(p => p.id === selectedPlanId);
-    if (!plan || !selectedCustomerId) return;
-
     try {
-      const items = [
-        {
-          planId: plan.id,
-          name: `${plan.name} (${plan.billingInterval})`,
-          quantity: Number(quantity),
-          unitPrice: plan.price,
-          total: plan.price * Number(quantity),
-        },
-      ];
-
-      await api.createQuotation({
-        customerId: selectedCustomerId,
-        items,
-        discountCode: discountCode || null,
-        taxRate: Number(taxRate),
-        notes,
-      });
-
-      success('Quotation Created', 'New quotation saved in draft status.');
+      const created = await api.createQuotation(form);
+      success('Quotation Created', `${created.quotationNumber} is ready, valid for 30 days.`);
       setIsCreateModalOpen(false);
-      setNotes('');
-      setDiscountCode('');
+      setForm(EMPTY_SUBSCRIPTION);
       loadData();
     } catch (err: any) {
       error('Failed to create quotation', err.message);
@@ -114,7 +66,7 @@ export const QuotationsPage: React.FC = () => {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Quotations</h1>
           <p className="text-sm text-slate-500 mt-1">
-            Enterprise proposals, discounts, tax calculations, and subscription conversions.
+            Proposals waiting for acceptance. Converting one activates its subscription.
           </p>
         </div>
 
@@ -180,21 +132,14 @@ export const QuotationsPage: React.FC = () => {
                       {quote.validUntil}
                     </td>
                     <td className="py-3.5 px-6 text-right">
-                      {quote.status !== 'accepted' ? (
-                        <button
-                          onClick={() => handleConvertQuotation(quote.id, quote.quotationNumber)}
-                          disabled={convertingId === quote.id}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 text-xs font-semibold hover:bg-emerald-100 border border-emerald-200/60 transition-colors disabled:opacity-50"
-                        >
-                          <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-                          {convertingId === quote.id ? 'Converting...' : 'Accept & Convert'}
-                        </button>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600">
-                          <CheckCircle className="w-3.5 h-3.5" />
-                          Converted
-                        </span>
-                      )}
+                      <button
+                        onClick={() => handleConvertQuotation(quote.id, quote.quotationNumber)}
+                        disabled={convertingId === quote.id}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 text-xs font-semibold hover:bg-emerald-100 border border-emerald-200/60 transition-colors disabled:opacity-50"
+                      >
+                        <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+                        {convertingId === quote.id ? 'Converting...' : 'Accept & Convert'}
+                      </button>
                     </td>
                   </tr>
                 ))
@@ -202,6 +147,11 @@ export const QuotationsPage: React.FC = () => {
             </tbody>
           </table>
         </div>
+        {!loading && total > quotations.length && (
+          <p className="px-6 py-3 border-t border-slate-100 text-xs text-slate-500">
+            Showing the latest {quotations.length.toLocaleString()} of {total.toLocaleString()}.
+          </p>
+        )}
       </div>
 
       {/* Create Quotation Modal */}
@@ -219,87 +169,7 @@ export const QuotationsPage: React.FC = () => {
             </div>
 
             <form onSubmit={handleCreateQuotation} className="space-y-4">
-              <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">Customer *</label>
-                <select
-                  required
-                  value={selectedCustomerId}
-                  onChange={e => setSelectedCustomerId(e.target.value)}
-                  className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden"
-                >
-                  {customers.map(c => (
-                    <option key={c.id} value={c.id}>
-                      {c.name} ({c.company})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="grid grid-cols-3 gap-3">
-                <div className="col-span-2">
-                  <label className="block text-xs font-medium text-slate-700 mb-1">Plan / Tier *</label>
-                  <select
-                    required
-                    value={selectedPlanId}
-                    onChange={e => setSelectedPlanId(e.target.value)}
-                    className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden"
-                  >
-                    {plans.map(p => (
-                      <option key={p.id} value={p.id}>
-                        {p.name} - ${p.price}/{p.billingInterval}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1">Qty</label>
-                  <input
-                    type="number"
-                    min={1}
-                    value={quantity}
-                    onChange={e => setQuantity(Math.max(1, Number(e.target.value)))}
-                    className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1">
-                    Promo Code (Optional)
-                  </label>
-                  <input
-                    type="text"
-                    value={discountCode}
-                    onChange={e => setDiscountCode(e.target.value.toUpperCase())}
-                    placeholder="e.g. GROWTH20"
-                    className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden uppercase"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1">
-                    Tax Rate (%)
-                  </label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={taxRate}
-                    onChange={e => setTaxRate(Number(e.target.value))}
-                    className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">Proposal Notes</label>
-                <textarea
-                  rows={2}
-                  value={notes}
-                  onChange={e => setNotes(e.target.value)}
-                  placeholder="Terms, custom SLA guarantees, validity terms..."
-                  className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden"
-                />
-              </div>
+              <SubscriptionFormFields value={form} onChange={setForm} showNotes />
 
               <div className="pt-4 flex justify-end gap-3 border-t border-slate-100">
                 <button

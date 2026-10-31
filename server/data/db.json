@@ -48,6 +48,20 @@
   ],
   "customers": [
     {
+      "id": "cust_mvw11ao2",
+      "name": "Karthik C K",
+      "contactName": "Karthik C K",
+      "email": "karthikck724@gmail.com",
+      "phone": "+919400680724",
+      "company": "B.Tech",
+      "status": "active",
+      "balance": 0,
+      "totalSpent": 0,
+      "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80",
+      "address": "School of Engineering,CUSAT",
+      "createdAt": "2026-10-31T06:35:20.258Z"
+    },
+    {
       "id": "cust_01",
       "name": "Acme Corporation",
       "contactName": "Elena Rostova",
@@ -770,6 +784,15 @@
     }
   ],
   "auditLogs": [
+    {
+      "id": "log_1793428520258_pg09",
+      "action": "CUSTOMER_CREATED",
+      "entityType": "customer",
+      "entityId": "cust_mvw11ao2",
+      "actor": "Megha (Admin)",
+      "details": "Created customer: Karthik C K (karthikck724@gmail.com)",
+      "timestamp": "2026-10-31T06:35:20.258Z"
+    },
     {
       "id": "log_1793425425382_b8lz",
       "action": "SCHEDULED_CYCLE_RAN",

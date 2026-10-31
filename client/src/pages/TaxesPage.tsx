@@ -1,30 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { Receipt, Plus, Globe, Check, X } from 'lucide-react';
+import { Plus, X } from 'lucide-react';
 import { api } from '../api/client';
 import { Tax } from '../types';
 import { StatusBadge } from '../components/StatusBadge';
+import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+
+const EMPTY_FORM = { name: '', rate: 18, taxType: 'percent' as Tax['taxType'] };
 
 export const TaxesPage: React.FC = () => {
   const [taxes, setTaxes] = useState<Tax[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [formData, setFormData] = useState(EMPTY_FORM);
 
-  // Form State
-  const [formData, setFormData] = useState({
-    name: '',
-    rate: 8.25,
-    country: 'United States',
-    region: 'California',
-  });
-
+  const { isAdmin } = useAuth();
   const { success, error } = useToast();
 
   const loadData = async () => {
     try {
       setLoading(true);
-      const data = await api.getTaxes();
-      setTaxes(data);
+      setTaxes(await api.getTaxes());
     } catch (err: any) {
       error('Failed to load taxes', err.message);
     } finally {
@@ -41,15 +37,10 @@ export const TaxesPage: React.FC = () => {
     if (!formData.name) return;
 
     try {
-      await api.createTax({
-        name: formData.name,
-        rate: Number(formData.rate),
-        country: formData.country,
-        region: formData.region,
-      });
-      success('Tax Rule Added', `${formData.name} (${formData.rate}%) is now configured.`);
+      await api.createTax({ ...formData, rate: Number(formData.rate) });
+      success('Tax Rule Added', `${formData.name} is now configured.`);
       setIsAddModalOpen(false);
-      setFormData({ name: '', rate: 8.25, country: 'United States', region: 'California' });
+      setFormData(EMPTY_FORM);
       loadData();
     } catch (err: any) {
       error('Failed to create tax rule', err.message);
@@ -63,17 +54,19 @@ export const TaxesPage: React.FC = () => {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Tax Configurations</h1>
           <p className="text-sm text-slate-500 mt-1">
-            Global tax rules, regional VAT, GST, and compliant invoice calculation matrices.
+            Taxes attached to products and applied when invoices are generated.
           </p>
         </div>
 
-        <button
-          onClick={() => setIsAddModalOpen(true)}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-white text-sm font-medium hover:bg-primary-hover shadow-sm transition-all"
-        >
-          <Plus className="w-4 h-4" />
-          Add Tax Rule
-        </button>
+        {isAdmin && (
+          <button
+            onClick={() => setIsAddModalOpen(true)}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-white text-sm font-medium hover:bg-primary-hover shadow-sm transition-all"
+          >
+            <Plus className="w-4 h-4" />
+            Add Tax Rule
+          </button>
+        )}
       </div>
 
       {/* Taxes Table */}
@@ -83,9 +76,7 @@ export const TaxesPage: React.FC = () => {
             <thead className="bg-slate-50/75 border-b border-slate-100 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
               <tr>
                 <th className="py-3.5 px-6">Tax Name</th>
-                <th className="py-3.5 px-6">Effective Rate</th>
-                <th className="py-3.5 px-6">Country / Jurisdiction</th>
-                <th className="py-3.5 px-6">Region</th>
+                <th className="py-3.5 px-6">Rate</th>
                 <th className="py-3.5 px-6">Type</th>
                 <th className="py-3.5 px-6 text-right">Status</th>
               </tr>
@@ -93,13 +84,13 @@ export const TaxesPage: React.FC = () => {
             <tbody className="divide-y divide-slate-100 text-slate-700">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-slate-400">
+                  <td colSpan={4} className="py-12 text-center text-slate-400">
                     Loading tax rules...
                   </td>
                 </tr>
               ) : taxes.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-slate-400">
+                  <td colSpan={4} className="py-12 text-center text-slate-400">
                     No tax rules found.
                   </td>
                 </tr>
@@ -108,15 +99,10 @@ export const TaxesPage: React.FC = () => {
                   <tr key={tax.id} className="hover:bg-slate-50/80 transition-colors">
                     <td className="py-3.5 px-6 font-semibold text-slate-900">{tax.name}</td>
                     <td className="py-3.5 px-6 font-mono font-bold text-primary">
-                      {tax.rate.toFixed(2)}%
+                      {tax.taxType === 'percent' ? `${tax.rate.toFixed(2)}%` : `$${tax.rate.toFixed(2)}`}
                     </td>
-                    <td className="py-3.5 px-6 font-medium text-slate-800 flex items-center gap-2">
-                      <Globe className="w-4 h-4 text-slate-400" />
-                      {tax.country}
-                    </td>
-                    <td className="py-3.5 px-6 text-slate-600">{tax.region}</td>
-                    <td className="py-3.5 px-6 text-xs capitalize text-slate-500">
-                      {tax.taxType}
+                    <td className="py-3.5 px-6 text-xs text-slate-500">
+                      {tax.taxType === 'percent' ? 'Percentage' : 'Fixed amount'}
                     </td>
                     <td className="py-3.5 px-6 text-right">
                       <StatusBadge status={tax.status} size="sm" />
@@ -148,39 +134,32 @@ export const TaxesPage: React.FC = () => {
                   required
                   value={formData.name}
                   onChange={e => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="e.g. UK VAT Standard Rate"
-                  className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">Rate (%) *</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  required
-                  value={formData.rate}
-                  onChange={e => setFormData({ ...formData, rate: Number(e.target.value) })}
+                  placeholder="e.g. GST 18%"
                   className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1">Country</label>
-                  <input
-                    type="text"
-                    value={formData.country}
-                    onChange={e => setFormData({ ...formData, country: e.target.value })}
+                  <label className="block text-xs font-medium text-slate-700 mb-1">Type</label>
+                  <select
+                    value={formData.taxType}
+                    onChange={e => setFormData({ ...formData, taxType: e.target.value as Tax['taxType'] })}
                     className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden"
-                  />
+                  >
+                    <option value="percent">Percentage (%)</option>
+                    <option value="fixed">Fixed amount</option>
+                  </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1">Region / State</label>
+                  <label className="block text-xs font-medium text-slate-700 mb-1">Rate *</label>
                   <input
-                    type="text"
-                    value={formData.region}
-                    onChange={e => setFormData({ ...formData, region: e.target.value })}
+                    type="number"
+                    step="0.01"
+                    min={0}
+                    required
+                    value={formData.rate}
+                    onChange={e => setFormData({ ...formData, rate: Number(e.target.value) })}
                     className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden"
                   />
                 </div>
