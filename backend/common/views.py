@@ -6,7 +6,23 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from accounts.models import User
+from billing.models import Invoice, Payment
 from catalog.models import Product, RecurringPlan, Tax
+from discounts.models import Discount, DiscountRequest
+from subscriptions.models import Subscription
+
+CHOICE_LISTS = {
+    "roles": User.Role,
+    "product_types": Product.ProductType,
+    "tax_types": Tax.TaxType,
+    "billing_periods": RecurringPlan.BillingPeriod,
+    "subscription_statuses": Subscription.Status,
+    "invoice_statuses": Invoice.Status,
+    "payment_methods": Payment.Method,
+    "discount_types": Discount.DiscountType,
+    "discount_applies_to": Discount.AppliesTo,
+    "discount_request_statuses": DiscountRequest.Status,
+}
 
 
 def _options(choices):
@@ -24,6 +40,12 @@ class MetaChoicesSerializer(serializers.Serializer):
     product_types = ChoiceSerializer(many=True)
     tax_types = ChoiceSerializer(many=True)
     billing_periods = ChoiceSerializer(many=True)
+    subscription_statuses = ChoiceSerializer(many=True)
+    invoice_statuses = ChoiceSerializer(many=True)
+    payment_methods = ChoiceSerializer(many=True)
+    discount_types = ChoiceSerializer(many=True)
+    discount_applies_to = ChoiceSerializer(many=True)
+    discount_request_statuses = ChoiceSerializer(many=True)
 
 
 class MetaChoicesView(APIView):
@@ -35,14 +57,7 @@ class MetaChoicesView(APIView):
         responses=MetaChoicesSerializer,
     )
     def get(self, request):
-        return Response(
-            {
-                "roles": _options(User.Role),
-                "product_types": _options(Product.ProductType),
-                "tax_types": _options(Tax.TaxType),
-                "billing_periods": _options(RecurringPlan.BillingPeriod),
-            }
-        )
+        return Response({name: _options(choices) for name, choices in CHOICE_LISTS.items()})
 
 
 def json_not_found(request, exception=None):

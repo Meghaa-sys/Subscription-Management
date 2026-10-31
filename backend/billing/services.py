@@ -8,20 +8,24 @@ unique constraint on (subscription, period_start) backs this up at database leve
 import logging
 from datetime import timedelta
 
+from django.conf import settings
+from django.core.mail import send_mail
 from django.db import transaction
 from django.utils import timezone
 
+from common.exceptions import BusinessRuleError
 from common.money import ZERO, money
 from discounts.services import (
     eligible_lines,
     get_applicable_discounts,
     line_base,
     mark_discount_used,
+    release_discount_usage,
 )
 from subscriptions.models import Subscription
 from subscriptions.services import tax_for
 
-from .models import Invoice, InvoiceLine
+from .models import Invoice, InvoiceLine, Payment
 
 logger = logging.getLogger(__name__)
 
@@ -186,3 +190,123 @@ def run_billing(today=None):
         "subscriptions_processed": len(due_ids),
         "failed": failed,
     }
+
+
+# --- Invoice actions --------------------------------------------------------
+
+
+def _lock_invoice(invoice_id):
+    return Invoice.objects.select_for_update().get(pk=invoice_id)
+
+
+@transaction.atomic
+def confirm_invoice(invoice_id):
+    """Draft to confirmed. An invoice fully covered by discounts has nothing to collect."""
+    invoice = _lock_invoice(invoice_id)
+    if invoice.status != Invoice.Status.DRAFT:
+        raise BusinessRuleError(
+            f"Only draft invoices can be confirmed; this one is {invoice.get_status_display()}."
+        )
+    invoice.status = Invoice.Status.PAID if invoice.total == ZERO else Invoice.Status.CONFIRMED
+    invoice.save(update_fields=["status"])
+    return invoice
+
+
+@transaction.atomic
+def cancel_invoice(invoice_id):
+    """Cancel a draft or unpaid confirmed invoice and give back its discount uses."""
+    invoice = _lock_invoice(invoice_id)
+    if invoice.status not in (Invoice.Status.DRAFT, Invoice.Status.CONFIRMED):
+        raise BusinessRuleError(f"A {invoice.get_status_display()} invoice cannot be cancelled.")
+    if invoice.amount_paid != ZERO:
+        raise BusinessRuleError("An invoice with payments cannot be cancelled.")
+    invoice.status = Invoice.Status.CANCELLED
+    invoice.save(update_fields=["status"])
+    release_discount_usage(invoice)
+    return invoice
+
+
+def send_invoice(invoice_id):
+    """Email the customer a summary and link. No row is locked while the email goes out."""
+    invoice = Invoice.objects.select_related("customer").get(pk=invoice_id)
+    if invoice.status not in (Invoice.Status.CONFIRMED, Invoice.Status.PAID):
+        raise BusinessRuleError("Only confirmed or paid invoices can be sent.")
+
+    link = f"{settings.FRONTEND_URL}/portal/invoices/{invoice.pk}"
+    message = (
+        f"Hi {invoice.customer.name},\n\n"
+        f"Invoice {invoice.number} for the period {invoice.period_start} to {invoice.period_end}.\n\n"
+        f"Total: {invoice.total}\n"
+        f"Paid: {invoice.amount_paid}\n"
+        f"Balance due: {invoice.balance}\n"
+        f"Due date: {invoice.due_date}\n\n"
+        f"View your invoice: {link}"
+    )
+    try:
+        send_mail(f"Invoice {invoice.number} from Brightloop", message, None, [invoice.customer.email])
+    except Exception:
+        logger.exception("Could not send invoice %s", invoice.pk)
+        raise BusinessRuleError("The invoice email could not be sent. Please try again.")
+
+    invoice.sent_at = timezone.now()
+    invoice.save(update_fields=["sent_at"])
+    return invoice
+
+
+BULK_ACTIONS = {"confirm": confirm_invoice, "send": send_invoice}
+
+
+def bulk_invoice_action(action, ids):
+    """Run an action on many invoices. Each one succeeds or fails on its own."""
+    results = []
+    for invoice_id in dict.fromkeys(ids):
+        try:
+            invoice = BULK_ACTIONS[action](invoice_id)
+        except Invoice.DoesNotExist:
+            results.append(
+                {"id": invoice_id, "success": False, "status": None, "error": "Invoice not found."}
+            )
+        except BusinessRuleError as error:
+            results.append(
+                {"id": invoice_id, "success": False, "status": None, "error": str(error.detail)}
+            )
+        else:
+            results.append({"id": invoice_id, "success": True, "status": invoice.status, "error": None})
+
+    succeeded = sum(1 for row in results if row["success"])
+    return {"succeeded": succeeded, "failed": len(results) - succeeded, "results": results}
+
+
+# --- Payments ---------------------------------------------------------------
+
+
+@transaction.atomic
+def record_payment(invoice_id, method, amount, payment_date, actor, note=""):
+    """
+    Record money received. The invoice row is locked so two simultaneous payments
+    cannot both pass the balance check.
+    """
+    invoice = _lock_invoice(invoice_id)
+    if invoice.status != Invoice.Status.CONFIRMED:
+        raise BusinessRuleError(
+            "Payments can only be recorded on confirmed invoices; "
+            f"this one is {invoice.get_status_display()}."
+        )
+    if amount <= ZERO or amount > invoice.balance:
+        raise BusinessRuleError(
+            f"The payment amount must be more than 0 and at most the balance of {invoice.balance}."
+        )
+
+    payment = Payment.objects.create(
+        invoice=invoice,
+        method=method,
+        amount=amount,
+        payment_date=payment_date,
+        note=note,
+        recorded_by=actor,
+    )
+    invoice.amount_paid += amount
+    if invoice.amount_paid >= invoice.total:
+        invoice.status = Invoice.Status.PAID
+    invoice.save(update_fields=["amount_paid", "status"])
+    return payment

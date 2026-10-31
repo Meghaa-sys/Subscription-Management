@@ -9,6 +9,8 @@ from rest_framework.response import Response
 
 from accounts.permissions import IsStaffOrAdmin
 from common.viewsets import SoftDeleteMixin
+from discounts import services as discount_services
+from discounts.serializers import AttachDiscountSerializer
 
 from . import services
 from .models import QuotationTemplate, QuotationTemplateLine, Subscription, SubscriptionLine
@@ -25,6 +27,13 @@ from .serializers import (
 
 TAG = "subscriptions"
 LINE_ID = OpenApiParameter("line_id", int, OpenApiParameter.PATH)
+DISCOUNT_ID = OpenApiParameter("discount_id", int, OpenApiParameter.PATH)
+DETAIL_PREFETCHES = (
+    Prefetch("lines", queryset=SubscriptionLine.objects.select_related("product", "variant")),
+    "history__changed_by",
+    "subscription_discounts__discount",
+    "subscription_discounts__added_by",
+)
 
 
 class SubscriptionFilter(django_filters.FilterSet):
@@ -93,10 +102,7 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(customer__user=self.request.user)
         if self.action == "list":
             return queryset.prefetch_related("lines")
-        return queryset.prefetch_related(
-            Prefetch("lines", queryset=SubscriptionLine.objects.select_related("product", "variant")),
-            "history__changed_by",
-        )
+        return queryset.prefetch_related(*DETAIL_PREFETCHES)
 
     def _detail_response(self, subscription_id, status_code=status.HTTP_200_OK):
         subscription = self.get_queryset().get(pk=subscription_id)
@@ -190,6 +196,37 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
         services.remove_addon_line(subscription.pk, line_id)
         return self._detail_response(subscription.pk)
 
+    @extend_schema(
+        tags=[TAG],
+        summary="Attach a discount",
+        description="The discount must be active with uses left. It applies from the next invoice.",
+        request=AttachDiscountSerializer,
+        responses={201: SubscriptionDetailSerializer},
+    )
+    @action(detail=True, methods=["post"], url_path="discounts")
+    def attach_discount(self, request, pk=None):
+        subscription = self.get_object()
+        serializer = AttachDiscountSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        discount_services.attach_discount(
+            subscription.pk, serializer.validated_data["discount"], request.user
+        )
+        return self._detail_response(subscription.pk, status.HTTP_201_CREATED)
+
+    @extend_schema(
+        tags=[TAG],
+        summary="Detach a discount",
+        description="Invoices already issued keep their discount.",
+        parameters=[DISCOUNT_ID],
+        request=None,
+        responses=SubscriptionDetailSerializer,
+    )
+    @action(detail=True, methods=["delete"], url_path=r"discounts/(?P<discount_id>\d+)")
+    def detach_discount(self, request, pk=None, discount_id=None):
+        subscription = self.get_object()
+        discount_services.detach_discount(subscription.pk, discount_id)
+        return self._detail_response(subscription.pk)
+
 
 TEMPLATE_TAG = "quotation templates"
 
@@ -241,7 +278,7 @@ class QuotationTemplateViewSet(SoftDeleteMixin, viewsets.ModelViewSet):
         )
         subscription = (
             Subscription.objects.select_related("customer", "plan", "salesperson", "payment_term", "template")
-            .prefetch_related("lines__product", "lines__variant", "history__changed_by")
+            .prefetch_related(*DETAIL_PREFETCHES)
             .get(pk=subscription.pk)
         )
         return Response(SubscriptionDetailSerializer(subscription).data, status=status.HTTP_201_CREATED)
