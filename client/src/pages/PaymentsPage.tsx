@@ -57,7 +57,7 @@ export const PaymentsPage: React.FC = () => {
         paymentMethod,
         amount: Number(amount),
       });
-      success('Payment Recorded', `$${Number(amount).toFixed(2)} applied to ${invoice.invoiceNumber}.`);
+      success('Payment Recorded', `₹${Number(amount).toFixed(2)} applied to ${invoice.invoiceNumber}.`);
       setIsRecordModalOpen(false);
       reload();
     } catch (err: any) {
@@ -140,7 +140,7 @@ export const PaymentsPage: React.FC = () => {
                       {pay.invoiceNumber}
                     </td>
                     <td className="py-3.5 px-6 font-mono font-bold text-slate-900">
-                      ${pay.amount.toFixed(2)}
+                      ₹{pay.amount.toFixed(2)}
                     </td>
                     <td className="py-3.5 px-6 text-xs text-slate-600">{pay.paymentMethod}</td>
                     <td className="py-3.5 px-6 text-xs text-slate-400">{pay.note || '—'}</td>
@@ -186,7 +186,7 @@ export const PaymentsPage: React.FC = () => {
                   >
                     {invoices.map(inv => (
                       <option key={inv.id} value={inv.id}>
-                        {inv.invoiceNumber} - {inv.customerName} (${inv.balance.toFixed(2)} due)
+                        {inv.invoiceNumber} - {inv.customerName} (₹{inv.balance.toFixed(2)} due)
                       </option>
                     ))}
                   </select>

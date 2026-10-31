@@ -12,7 +12,7 @@ from django.utils import timezone
 from accounts.models import Customer, PasswordResetToken, User
 from billing.models import Invoice, InvoiceLine, Payment
 from billing.services import confirm_invoice, record_payment, run_billing
-from catalog.models import PaymentTerm, Product, RecurringPlan, Tax
+from catalog.models import PaymentTerm, Product, ProductVariant, RecurringPlan, Tax
 from common.money import ZERO, money
 from discounts.models import Discount, DiscountRequest, DiscountUsage, SubscriptionDiscount
 from discounts.services import (
@@ -48,12 +48,150 @@ BIG_CUSTOMERS = 250
 BATCH_SIZE = 1000
 BIG_NOTE = "Bulk performance data"
 
-COMPANIES = [
-    "Aarav Traders", "Blue Lotus Foods", "Cedar Logistics", "Deccan Textiles", "Evergreen Clinics",
-    "Fable Studios", "Ganga Hardware", "Horizon Motors", "Indigo Retail", "Jasmine Hotels",
-    "Kaveri Pharma", "Lumen Labs", "Monsoon Media", "Nimbus Cloud", "Orchid Interiors",
-    "Peacock Apparel", "Quartz Finance", "Riverdale Schools", "Saffron Kitchens", "Teal Engineering",
+INDIAN_COMPANIES = [
+    {
+        "name": "Tata Consultancy Services Ltd",
+        "company": "Tata Consultancy Services",
+        "phone": "+91 98200 11234",
+        "address": "TCS House, Raveline Street, Fort, Mumbai, Maharashtra 400001",
+        "gstin": "27AAACT2727Q1ZW",
+    },
+    {
+        "name": "Reliance Industries Limited",
+        "company": "Reliance Industries",
+        "phone": "+91 98201 22345",
+        "address": "Maker Chambers IV, 222 Nariman Point, Mumbai, Maharashtra 400021",
+        "gstin": "27AAACR4567A1ZP",
+    },
+    {
+        "name": "Infosys Technologies Ltd",
+        "company": "Infosys",
+        "phone": "+91 98450 33456",
+        "address": "Plot 44, Electronics City, Hosur Road, Bengaluru, Karnataka 560100",
+        "gstin": "29AAACI1234D1ZH",
+    },
+    {
+        "name": "HDFC Bank Enterprise Banking",
+        "company": "HDFC Bank",
+        "phone": "+91 98202 44567",
+        "address": "HDFC Bank House, Senapati Bapat Marg, Lower Parel, Mumbai 400013",
+        "gstin": "27AAACH2884A1ZS",
+    },
+    {
+        "name": "Wipro Technologies",
+        "company": "Wipro Limited",
+        "phone": "+91 98451 55678",
+        "address": "Doddakannelli, Sarjapur Road, Bengaluru, Karnataka 560035",
+        "gstin": "29AAACW1234E1ZR",
+    },
+    {
+        "name": "Bharti Airtel Business",
+        "company": "Bharti Airtel",
+        "phone": "+91 98100 66789",
+        "address": "Airtel Centre, Worldmark 2, Aerocity, New Delhi, Delhi 110037",
+        "gstin": "07AAACB1234C1ZU",
+    },
+    {
+        "name": "ICICI Bank Corporate Suite",
+        "company": "ICICI Bank",
+        "phone": "+91 98203 77890",
+        "address": "ICICI Bank Towers, Bandra-Kurla Complex, Mumbai, Maharashtra 400051",
+        "gstin": "27AAACI0001B1Z9",
+    },
+    {
+        "name": "Zomato Enterprise Solutions",
+        "company": "Zomato",
+        "phone": "+91 98101 88901",
+        "address": "Ground Floor, Tower B, Pioneer Square, Sector 62, Gurugram, Haryana 122098",
+        "gstin": "06AAACZ1234K1ZX",
+    },
+    {
+        "name": "Swiggy Cloud Solutions",
+        "company": "Swiggy (Bundl Tech)",
+        "phone": "+91 98452 99012",
+        "address": "IBC Knowledge Park, Bannerghatta Main Road, Bengaluru, Karnataka 560029",
+        "gstin": "29AAACB4567J1ZM",
+    },
+    {
+        "name": "Mahindra & Mahindra Ltd",
+        "company": "Mahindra Group",
+        "phone": "+91 98204 00123",
+        "address": "Gateway Building, Apollo Bunder, Colaba, Mumbai, Maharashtra 400001",
+        "gstin": "27AAACM1234L1ZQ",
+    },
+    {
+        "name": "Larsen & Toubro Infotech",
+        "company": "Larsen & Toubro",
+        "phone": "+91 98205 11234",
+        "address": "L&T House, Ballard Estate, Mumbai, Maharashtra 400001",
+        "gstin": "27AAACL1234M1ZP",
+    },
+    {
+        "name": "Titan Company Limited",
+        "company": "Titan Company (Tata)",
+        "phone": "+91 98453 22345",
+        "address": "Integrity, 132/133, Divyasree Technopolis, Yamalur, Bengaluru 560037",
+        "gstin": "29AAACT1234N1ZO",
+    },
+    {
+        "name": "State Bank of India Corporate",
+        "company": "State Bank of India",
+        "phone": "+91 98206 33456",
+        "address": "State Bank Bhavan, Madame Cama Road, Nariman Point, Mumbai 400021",
+        "gstin": "27AAACS1234P1ZN",
+    },
+    {
+        "name": "Adani Enterprises Limited",
+        "company": "Adani Group",
+        "phone": "+91 98790 44567",
+        "address": "Adani Corporate House, Shantigram, SG Highway, Ahmedabad 382421",
+        "gstin": "24AAACA1234Q1ZM",
+    },
+    {
+        "name": "ITC Limited Enterprise",
+        "company": "ITC Limited",
+        "phone": "+91 98300 55678",
+        "address": "Virginia House, 37 J.L. Nehru Road, Kolkata, West Bengal 700071",
+        "gstin": "19AAACI1234R1ZL",
+    },
+    {
+        "name": "Asian Paints Limited",
+        "company": "Asian Paints",
+        "phone": "+91 98207 66789",
+        "address": "6A Shantinagar, Santacruz East, Mumbai, Maharashtra 400055",
+        "gstin": "27AAACA1234S1ZK",
+    },
+    {
+        "name": "Bajaj Auto Corporation",
+        "company": "Bajaj Auto",
+        "phone": "+91 98220 77890",
+        "address": "Mumbai-Pune Road, Akurdi, Pune, Maharashtra 411035",
+        "gstin": "27AAACB1234T1ZJ",
+    },
+    {
+        "name": "Sun Pharmaceutical Industries",
+        "company": "Sun Pharma",
+        "phone": "+91 98208 88901",
+        "address": "Sun House, CTS No. 201 B/1, Western Express Highway, Goregaon East, Mumbai 400063",
+        "gstin": "27AAACS1234U1ZI",
+    },
+    {
+        "name": "Bharat Petroleum Corp Ltd",
+        "company": "Bharat Petroleum",
+        "phone": "+91 98209 99012",
+        "address": "Bharat Bhavan, 4 and 6 Currimbhoy Road, Ballard Estate, Mumbai 400001",
+        "gstin": "27AAACB1234V1ZH",
+    },
+    {
+        "name": "HCL Technologies",
+        "company": "HCL Tech",
+        "phone": "+91 98110 00123",
+        "address": "Technology Hub, Plot No 3A, Sector 126, Noida, Uttar Pradesh 201304",
+        "gstin": "09AAACH1234W1ZG",
+    },
 ]
+
+COMPANIES = [c["company"] for c in INDIAN_COMPANIES]
 
 PaymentMethod = Payment.Method
 Status = Subscription.Status
@@ -93,27 +231,39 @@ class Command(BaseCommand):
         )
 
     def _wipe(self):
-        """Delete everything, children first, because foreign keys are PROTECT."""
-        for model in (
+        """Delete everything cleanly via SQL TRUNCATE CASCADE on Postgres or model delete on SQLite."""
+        from django.db import connection
+        models = (
             DiscountUsage, DiscountRequest, SubscriptionDiscount, Payment, InvoiceLine, Invoice,
             SubscriptionStatusHistory, SubscriptionLine, Subscription, QuotationTemplateLine,
-            QuotationTemplate, Discount, RecurringPlan, Product, Tax, PaymentTerm,
+            QuotationTemplate, Discount, RecurringPlan, ProductVariant, Product, Tax, PaymentTerm,
             PasswordResetToken, Customer, User,
-        ):
-            model.objects.all().delete()
-        self.stdout.write("Existing data deleted.")
-
-    # --- Base data ----------------------------------------------------------
+        )
+        if connection.vendor == "sqlite":
+            for model in models:
+                model.objects.all().delete()
+        else:
+            tables = [model._meta.db_table for model in models]
+            with connection.cursor() as cursor:
+                cursor.execute(f"TRUNCATE TABLE {', '.join(tables)} CASCADE;")
+        self.stdout.write("Existing data deleted cleanly.")
 
     def _seed_base(self):
+        print("1/6 Creating users...", flush=True)
         self._create_users()
+        print("2/6 Creating catalogue...", flush=True)
         self._create_catalogue()
+        print("3/6 Creating templates & discounts...", flush=True)
         self._create_templates_and_discounts()
+        print("4/6 Creating subscriptions...", flush=True)
         subscriptions = self._create_subscriptions()
+        print("5/6 Running billing engine...", flush=True)
         self._bill_history()
+        print("6/6 Settling invoices & completing lifecycles...", flush=True)
         self._settle_invoices()
         self._finish_lifecycles(subscriptions)
         self._create_discount_requests(subscriptions["active"])
+        print("Seeding complete!", flush=True)
 
     def _create_users(self):
         self.admin = User.objects.create_superuser(
@@ -129,20 +279,20 @@ class Command(BaseCommand):
             for number in (1, 2)
         ]
         self.customers = []
-        for number, company in enumerate(COMPANIES, start=1):
+        for number, item in enumerate(INDIAN_COMPANIES, start=1):
             email = f"customer{number}@brightloop.test"
             user = None
             if number <= CUSTOMERS_WITH_LOGIN:
-                user = User.objects.create_user(email=email, password=CUSTOMER_PASSWORD, name=company)
+                user = User.objects.create_user(email=email, password=CUSTOMER_PASSWORD, name=item["name"])
             self.customers.append(
                 Customer.objects.create(
                     user=user,
-                    name=company,
-                    company=company,
+                    name=item["name"],
+                    company=item["company"],
                     email=email,
-                    phone=f"+91 98765 {number:05d}",
-                    billing_address=f"{number} MG Road, Bengaluru 5600{number:02d}",
-                    tax_id=f"29ABCDE{number:04d}F1Z5",
+                    phone=item["phone"],
+                    billing_address=item["address"],
+                    tax_id=item["gstin"],
                 )
             )
 

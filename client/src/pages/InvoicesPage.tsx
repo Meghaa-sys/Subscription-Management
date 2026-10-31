@@ -186,7 +186,7 @@ export const InvoicesPage: React.FC = () => {
                     <td className="py-3.5 px-6 text-xs text-slate-500">{inv.issueDate}</td>
                     <td className="py-3.5 px-6 text-xs text-slate-500">{inv.dueDate}</td>
                     <td className="py-3.5 px-6 font-mono font-bold text-slate-900">
-                      ${inv.total.toFixed(2)}
+                      ₹{inv.total.toFixed(2)}
                     </td>
                     <td className="py-3.5 px-6">
                       <StatusBadge status={inv.status} size="sm" />
@@ -327,10 +327,10 @@ export const InvoicesPage: React.FC = () => {
                         <td className="py-2.5 px-4 font-medium text-slate-800">{item.description}</td>
                         <td className="py-2.5 px-4 text-center text-slate-500">{item.quantity}</td>
                         <td className="py-2.5 px-4 text-right font-mono text-slate-600">
-                          ${item.unitPrice.toFixed(2)}
+                          ₹{item.unitPrice.toFixed(2)}
                         </td>
                         <td className="py-2.5 px-4 text-right font-mono font-medium text-slate-900">
-                          ${item.amount.toFixed(2)}
+                          ₹{item.amount.toFixed(2)}
                         </td>
                       </tr>
                     ))}
@@ -343,26 +343,26 @@ export const InvoicesPage: React.FC = () => {
                 <div className="w-64 space-y-2">
                   <div className="flex justify-between text-slate-500">
                     <span>Subtotal</span>
-                    <span className="font-mono">${selectedInvoice.subtotal.toFixed(2)}</span>
+                    <span className="font-mono">₹{selectedInvoice.subtotal.toFixed(2)}</span>
                   </div>
                   {selectedInvoice.discountAmount > 0 && (
                     <div className="flex justify-between text-emerald-600 font-medium">
                       <span>Discount</span>
-                      <span className="font-mono">-${selectedInvoice.discountAmount.toFixed(2)}</span>
+                      <span className="font-mono">-₹{selectedInvoice.discountAmount.toFixed(2)}</span>
                     </div>
                   )}
                   <div className="flex justify-between text-slate-500">
                     <span>Tax</span>
-                    <span className="font-mono">${selectedInvoice.taxAmount.toFixed(2)}</span>
+                    <span className="font-mono">₹{selectedInvoice.taxAmount.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-sm font-bold text-slate-900 border-t border-slate-200 pt-2">
                     <span>Total Amount</span>
-                    <span className="font-mono">${selectedInvoice.total.toFixed(2)}</span>
+                    <span className="font-mono">₹{selectedInvoice.total.toFixed(2)}</span>
                   </div>
                   {canPay(selectedInvoice) && (
                     <div className="flex justify-between font-semibold text-slate-900">
                       <span>Balance Due</span>
-                      <span className="font-mono">${selectedInvoice.balance.toFixed(2)}</span>
+                      <span className="font-mono">₹{selectedInvoice.balance.toFixed(2)}</span>
                     </div>
                   )}
                 </div>

@@ -147,7 +147,7 @@ export const PlansPage: React.FC = () => {
                 {/* Price Display */}
                 <div className="mt-4 flex items-baseline gap-1">
                   <span className="text-3xl font-extrabold text-slate-900 font-mono tracking-tight group-hover:scale-105 transition-transform origin-left">
-                    ${plan.price.toLocaleString()}
+                    ₹{plan.price.toLocaleString()}
                   </span>
                   <span className="text-xs text-slate-500 font-medium">
                     /{PERIOD_LABEL[plan.billingInterval]}

@@ -93,7 +93,7 @@ export const DiscountsPage: React.FC = () => {
                 <StatusBadge status={disc.status} size="sm" />
               </div>
               <p className="text-2xl font-black font-mono text-slate-900 mt-3">
-                {disc.type === 'percent' ? `${disc.value}% OFF` : `$${disc.value} OFF`}
+                {disc.type === 'percent' ? `${disc.value}% OFF` : `₹${disc.value} OFF`}
               </p>
             </div>
 

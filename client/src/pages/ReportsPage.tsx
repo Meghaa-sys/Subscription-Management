@@ -43,15 +43,15 @@ export const ReportsPage: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Metric
           label="Monthly Recurring Revenue"
-          value={`$${formatMoney(summary.mrr)}`}
-          note={`ARR $${formatMoney(summary.arr)}`}
+          value={`₹${formatMoney(summary.mrr)}`}
+          note={`ARR ₹${formatMoney(summary.arr)}`}
         />
         <Metric label="Active Subscriptions" value={summary.activeSubscriptions.toLocaleString()} />
-        <Metric label="Revenue Collected" value={`$${formatMoney(summary.revenueCollected)}`} note="All time" />
+        <Metric label="Revenue Collected" value={`₹${formatMoney(summary.revenueCollected)}`} note="All time" />
         <Metric
           label="Outstanding"
-          value={`$${formatMoney(summary.outstanding)}`}
-          note={`$${formatMoney(summary.overdueAmount)} overdue on ${summary.overdueCount.toLocaleString()} invoices`}
+          value={`₹${formatMoney(summary.outstanding)}`}
+          note={`₹${formatMoney(summary.overdueAmount)} overdue on ${summary.overdueCount.toLocaleString()} invoices`}
         />
       </div>
 
@@ -78,7 +78,7 @@ export const ReportsPage: React.FC = () => {
                     <tr key={row.month} className="hover:bg-slate-50/80 transition-colors">
                       <td className="py-3 px-4 font-semibold text-slate-900">{row.month}</td>
                       <td className="py-3 px-4 text-right font-mono font-bold text-slate-900">
-                        ${formatMoney(row.amount)}
+                        ₹{formatMoney(row.amount)}
                       </td>
                     </tr>
                   ))
@@ -97,7 +97,7 @@ export const ReportsPage: React.FC = () => {
                   <span className="text-slate-600">{bucket.label} days late</span>
                   <span className="text-right">
                     <span className="block font-mono font-semibold text-slate-900">
-                      ${formatMoney(bucket.amount)}
+                      ₹{formatMoney(bucket.amount)}
                     </span>
                     <span className="block text-xs text-slate-400">{bucket.count} invoices</span>
                   </span>

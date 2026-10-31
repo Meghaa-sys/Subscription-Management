@@ -12,6 +12,7 @@ import {
   Percent,
   Receipt,
   BarChart3,
+  CalendarDays,
   UserCheck,
   Settings,
   ChevronLeft,
@@ -42,6 +43,7 @@ const navItems = [
   { to: '/discounts', label: 'Discounts', icon: Percent },
   { to: '/taxes', label: 'Taxes', icon: Receipt },
   { to: '/reports', label: 'Reports', icon: BarChart3 },
+  { to: '/calendar', label: 'Sales Calendar', icon: CalendarDays },
   { to: '/users', label: 'Users', icon: UserCheck, adminOnly: true },
   { to: '/settings', label: 'Settings', icon: Settings },
 ];

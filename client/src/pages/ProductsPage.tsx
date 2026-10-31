@@ -106,7 +106,7 @@ export const ProductsPage: React.FC = () => {
 
             <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
               <span>Sales price</span>
-              <span className="font-mono font-semibold text-slate-900">${prod.salesPrice.toLocaleString()}</span>
+              <span className="font-mono font-semibold text-slate-900">₹{prod.salesPrice.toLocaleString()}</span>
             </div>
           </div>
         ))}

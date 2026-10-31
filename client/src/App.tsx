@@ -21,6 +21,7 @@ import { TaxesPage } from './pages/TaxesPage';
 import { ReportsPage } from './pages/ReportsPage';
 import { UsersPage } from './pages/UsersPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { SalesCalendarPage } from './pages/SalesCalendarPage';
 import { ResetPasswordPage } from './pages/ResetPasswordPage';
 
 // Customer portal
@@ -103,6 +104,7 @@ function AppContent() {
             <Route path="/discounts" element={<DiscountsPage />} />
             <Route path="/taxes" element={<TaxesPage />} />
             <Route path="/reports" element={<ReportsPage />} />
+            <Route path="/calendar" element={<SalesCalendarPage />} />
             <Route path="/users" element={isAdmin ? <UsersPage /> : <Navigate to="/" replace />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />

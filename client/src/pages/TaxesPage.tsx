@@ -99,7 +99,7 @@ export const TaxesPage: React.FC = () => {
                   <tr key={tax.id} className="hover:bg-slate-50/80 transition-colors">
                     <td className="py-3.5 px-6 font-semibold text-slate-900">{tax.name}</td>
                     <td className="py-3.5 px-6 font-mono font-bold text-primary">
-                      {tax.taxType === 'percent' ? `${tax.rate.toFixed(2)}%` : `$${tax.rate.toFixed(2)}`}
+                      {tax.taxType === 'percent' ? `${tax.rate.toFixed(2)}%` : `₹${tax.rate.toFixed(2)}`}
                     </td>
                     <td className="py-3.5 px-6 text-xs text-slate-500">
                       {tax.taxType === 'percent' ? 'Percentage' : 'Fixed amount'}

@@ -129,7 +129,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ dateFilter }) => {
           </div>
           <div className="mt-3 flex items-baseline justify-between">
             <span className="text-2xl font-bold tracking-tight text-slate-900 font-mono group-hover:text-emerald-700 transition-colors">
-              ${formatMoney(kpis.mrr.value)}
+              ₹{formatMoney(kpis.mrr.value)}
             </span>
           </div>
           <div className="mt-3 flex items-center justify-end text-xs">
@@ -153,7 +153,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ dateFilter }) => {
           </div>
           <div className="mt-3 flex items-baseline justify-between">
             <span className="text-2xl font-bold tracking-tight text-slate-900 font-mono group-hover:text-primary transition-colors">
-              ${formatMoney(kpis.revenueCollected.value)}
+              ₹{formatMoney(kpis.revenueCollected.value)}
             </span>
           </div>
           <div className="mt-3 flex items-center justify-end text-xs">
@@ -180,7 +180,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ dateFilter }) => {
               <span className="text-2xl font-bold tracking-tight text-slate-900 font-mono group-hover:text-rose-600 transition-colors">
                 {kpis.overdueInvoices.value}
               </span>
-              <span className="text-xs text-slate-400 ml-1.5">(${formatMoney(kpis.overdueInvoices.amount)})</span>
+              <span className="text-xs text-slate-400 ml-1.5">(₹{formatMoney(kpis.overdueInvoices.amount)})</span>
             </div>
           </div>
           <div className="mt-3 flex items-center justify-end text-xs">
@@ -223,7 +223,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ dateFilter }) => {
                       <div className="absolute -top-16 z-20 bg-slate-900 text-white text-xs py-1.5 px-3 rounded-xl shadow-lg pointer-events-none whitespace-nowrap animate-in fade-in zoom-in-95 duration-150">
                         <p className="font-semibold">{bar.period}</p>
                         <p className="text-slate-300">
-                          Collected: <span className="font-mono font-medium text-emerald-400">${formatMoney(bar.collected)}</span>
+                          Collected: <span className="font-mono font-medium text-emerald-400">₹{formatMoney(bar.collected)}</span>
                         </p>
                         {/* Caret */}
                         <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-slate-900" />
@@ -276,11 +276,36 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ dateFilter }) => {
           <div className="relative flex items-center justify-center my-4">
             <svg width="180" height="180" viewBox="0 0 180 180" className="transform -rotate-90">
               {(() => {
+                const COLOR_MAP: Record<string, string> = {
+                  active: '#10B981',
+                  Active: '#10B981',
+                  quotation: '#3B82F6',
+                  Quotation: '#3B82F6',
+                  confirmed: '#8B5CF6',
+                  Confirmed: '#8B5CF6',
+                  draft: '#64748B',
+                  Draft: '#64748B',
+                  paused: '#F59E0B',
+                  Paused: '#F59E0B',
+                  closed: '#EF4444',
+                  Closed: '#EF4444',
+                };
+
+                const totalCount = subscriptionDonut.total || 1;
+                const nonZeroItems = subscriptionDonut.data.filter(d => d.count > 0);
+                // Allocate a minimum visible arc (4.5%) to non-zero segments so every status is clearly distinct on the ring
+                const MIN_ARC = nonZeroItems.length > 1 ? 4.5 : 0;
+                const totalReserved = nonZeroItems.length * MIN_ARC;
+                const remainingWeight = Math.max(0, 100 - totalReserved);
+
                 let accumulatedPercent = 0;
                 return subscriptionDonut.data.map(item => {
-                  const strokeDasharray = `${item.percentage} ${100 - item.percentage}`;
+                  if (item.count === 0) return null;
+                  const itemColor = COLOR_MAP[item.name] || item.color || '#64748B';
+                  const visualPct = MIN_ARC + (item.count / totalCount) * remainingWeight;
+                  const strokeDasharray = `${visualPct} ${100 - visualPct}`;
                   const strokeDashoffset = -accumulatedPercent;
-                  accumulatedPercent += item.percentage;
+                  accumulatedPercent += visualPct;
                   const isHovered = donutHoverSegment === item.name;
 
                   return (
@@ -290,12 +315,16 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ dateFilter }) => {
                       cy="90"
                       r="70"
                       fill="transparent"
-                      stroke={item.color}
+                      stroke={itemColor}
                       strokeWidth={isHovered ? '24' : '18'}
                       strokeDasharray={strokeDasharray}
                       strokeDashoffset={strokeDashoffset}
                       pathLength="100"
                       className="transition-all duration-200 cursor-pointer"
+                      style={{
+                        filter: isHovered ? `drop-shadow(0 0 6px ${itemColor}99)` : undefined,
+                        opacity: donutHoverSegment && !isHovered ? 0.35 : 1,
+                      }}
                       onMouseEnter={() => setDonutHoverSegment(item.name)}
                       onMouseLeave={() => setDonutHoverSegment(null)}
                     />
@@ -307,21 +336,43 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ dateFilter }) => {
             {/* Dynamic Center Label */}
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
               {activeDonutItem ? (
-                <>
-                  <span className="text-2xl font-bold text-slate-900 animate-in fade-in duration-100">
-                    {activeDonutItem.count}
-                  </span>
-                  <span className="text-xs font-medium text-slate-500 capitalize leading-tight">
-                    {activeDonutItem.name}
-                  </span>
-                  <span className="text-[10px] text-primary font-semibold">
-                    {activeDonutItem.percentage}% of total
-                  </span>
-                </>
+                (() => {
+                  const COLOR_MAP: Record<string, string> = {
+                    active: '#10B981',
+                    Active: '#10B981',
+                    quotation: '#3B82F6',
+                    Quotation: '#3B82F6',
+                    confirmed: '#8B5CF6',
+                    Confirmed: '#8B5CF6',
+                    draft: '#64748B',
+                    Draft: '#64748B',
+                    paused: '#F59E0B',
+                    Paused: '#F59E0B',
+                    closed: '#EF4444',
+                    Closed: '#EF4444',
+                  };
+                  const color = COLOR_MAP[activeDonutItem.name] || activeDonutItem.color;
+                  return (
+                    <>
+                      <span className="text-2xl font-bold text-slate-900 animate-in fade-in duration-100">
+                        {activeDonutItem.count.toLocaleString()}
+                      </span>
+                      <span
+                        className="text-xs font-bold capitalize leading-tight"
+                        style={{ color }}
+                      >
+                        {activeDonutItem.name}
+                      </span>
+                      <span className="text-[10px] text-slate-500 font-semibold mt-0.5">
+                        {activeDonutItem.percentage > 0 ? `${activeDonutItem.percentage}%` : '<1%'} of total
+                      </span>
+                    </>
+                  );
+                })()
               ) : (
                 <>
                   <span className="text-2xl font-bold text-slate-900">
-                    {subscriptionDonut.total}
+                    {subscriptionDonut.total.toLocaleString()}
                   </span>
                   <span className="text-xs text-slate-400 font-medium">
                     Total Subscriptions
@@ -332,32 +383,58 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ dateFilter }) => {
           </div>
 
           {/* Interactive Legend with counts and hover sync */}
-          <div className="space-y-2 pt-2 border-t border-slate-100">
+          <div className="space-y-1.5 pt-2 border-t border-slate-100">
             {subscriptionDonut.data.map(item => {
+              const COLOR_MAP: Record<string, string> = {
+                active: '#10B981',
+                Active: '#10B981',
+                quotation: '#3B82F6',
+                Quotation: '#3B82F6',
+                confirmed: '#8B5CF6',
+                Confirmed: '#8B5CF6',
+                draft: '#64748B',
+                Draft: '#64748B',
+                paused: '#F59E0B',
+                Paused: '#F59E0B',
+                closed: '#EF4444',
+                Closed: '#EF4444',
+              };
+              const itemColor = COLOR_MAP[item.name] || item.color || '#64748B';
               const isHovered = donutHoverSegment === item.name;
+              const pct = item.percentage;
+              const pctText = pct > 0 ? `${pct}%` : item.count > 0 ? '<1%' : '0%';
+
               return (
                 <div
                   key={item.name}
                   onMouseEnter={() => setDonutHoverSegment(item.name)}
                   onMouseLeave={() => setDonutHoverSegment(null)}
-                  className={`flex items-center justify-between p-1.5 rounded-lg text-xs cursor-pointer transition-colors ${
-                    isHovered ? 'bg-slate-100 font-semibold text-slate-900' : 'text-slate-600 hover:bg-slate-50'
+                  className={`flex items-center justify-between p-2 rounded-xl text-xs cursor-pointer transition-all duration-150 ${
+                    isHovered
+                      ? 'bg-slate-100/90 font-semibold text-slate-900 shadow-xs translate-x-1'
+                      : 'text-slate-600 hover:bg-slate-50'
                   }`}
                 >
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2.5">
                     <span
-                      className="w-2.5 h-2.5 rounded-full transition-transform"
+                      className="w-3 h-3 rounded-full transition-transform ring-2 ring-white shadow-xs"
                       style={{
-                        backgroundColor: item.color,
+                        backgroundColor: itemColor,
                         transform: isHovered ? 'scale(1.25)' : 'scale(1)',
                       }}
                     />
-                    <span>{item.name}</span>
+                    <span className="font-medium text-slate-700">{item.name}</span>
                   </div>
                   <div className="flex items-center gap-2 font-mono">
-                    <span>{item.count}</span>
-                    <span className="text-slate-400 text-[11px] w-8 text-right">
-                      {item.percentage}%
+                    <span className="font-semibold text-slate-900">{item.count.toLocaleString()}</span>
+                    <span
+                      className="text-[11px] font-semibold px-1.5 py-0.5 rounded text-right min-w-[36px]"
+                      style={{
+                        backgroundColor: `${itemColor}18`,
+                        color: itemColor,
+                      }}
+                    >
+                      {pctText}
                     </span>
                   </div>
                 </div>
@@ -407,7 +484,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ dateFilter }) => {
 
                 <div className="flex items-center gap-3 shrink-0">
                   <span className="text-sm font-semibold text-slate-900 font-mono">
-                    ${inv.total.toFixed(2)}
+                    ₹{inv.total.toFixed(2)}
                   </span>
                   <StatusBadge status={inv.status} size="sm" />
                 </div>

@@ -183,7 +183,7 @@ export const SubscriptionsPage: React.FC = () => {
                       </p>
                     </td>
                     <td className="py-3.5 px-6 font-mono font-bold text-slate-900">
-                      ${formatMoney(sub.amount)}
+                      ₹{formatMoney(sub.amount)}
                     </td>
                     <td className="py-3.5 px-6 text-xs">
                       <p className="font-medium text-slate-800">{sub.nextRenewal}</p>

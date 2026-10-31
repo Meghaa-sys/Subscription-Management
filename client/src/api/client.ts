@@ -195,7 +195,20 @@ function daysUntil(dateText?: string | null): number {
 
 const avatars = new Map<string, string>();
 
-/** A generated initials image, so customer names are never sent to an avatar service. */
+const GRADIENTS = [
+  ['#3B82F6', '#1D4ED8'], // Royal Blue
+  ['#10B981', '#047857'], // Emerald
+  ['#8B5CF6', '#6D28D9'], // Purple
+  ['#F59E0B', '#D97706'], // Amber
+  ['#EC4899', '#BE185D'], // Pink
+  ['#06B6D4', '#0E7490'], // Cyan
+  ['#F97316', '#C2410C'], // Orange
+  ['#6366F1', '#4338CA'], // Indigo
+  ['#14B8A6', '#0F766E'], // Teal
+  ['#E11D48', '#9F1239'], // Rose
+];
+
+/** A generated corporate brand avatar with sleek modern gradients. */
 function avatarFor(name = ''): string {
   const cached = avatars.get(name);
   if (cached) return cached;
@@ -205,10 +218,20 @@ function avatarFor(name = ''): string {
     .slice(0, 2)
     .map(part => part[0].toUpperCase())
     .join('')
-    .replace(/[<>&"']/g, '');
+    .replace(/[<>&"']/g, '') || 'BL';
+
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = (hash << 5) - hash + name.charCodeAt(i);
+    hash |= 0;
+  }
+  const [c1, c2] = GRADIENTS[Math.abs(hash) % GRADIENTS.length];
+
   const svg =
-    `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect width="64" height="64" fill="#EEEBFF"/>` +
-    `<text x="50%" y="50%" dy=".35em" text-anchor="middle" font-family="sans-serif" font-size="24" font-weight="600" fill="#5145E5">${initials}</text></svg>`;
+    `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">` +
+    `<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="${c1}"/><stop offset="100%" stop-color="${c2}"/></linearGradient></defs>` +
+    `<rect width="64" height="64" rx="16" fill="url(#g)"/>` +
+    `<text x="50%" y="54%" text-anchor="middle" dominant-baseline="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="22" font-weight="700" fill="#ffffff" letter-spacing="0.5">${initials}</text></svg>`;
   const url = `data:image/svg+xml,${encodeURIComponent(svg)}`;
   avatars.set(name, url);
   return url;
@@ -521,12 +544,18 @@ const PERIOD_DAYS: Record<string, number> = {
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  draft: '#CBD5E1',
-  quotation: '#A5B4FC',
-  confirmed: '#818CF8',
-  active: '#5145E5',
-  paused: '#F59E0B',
-  closed: '#94A3B8',
+  draft: '#64748B',      // Cool Slate Grey
+  Draft: '#64748B',
+  quotation: '#3B82F6',  // Vivid Royal Blue
+  Quotation: '#3B82F6',
+  confirmed: '#8B5CF6',  // Vivid Purple / Indigo
+  Confirmed: '#8B5CF6',
+  active: '#10B981',     // Vibrant Emerald Green
+  Active: '#10B981',
+  paused: '#F59E0B',     // Rich Warm Amber
+  Paused: '#F59E0B',
+  closed: '#EF4444',     // Crimson Red
+  Closed: '#EF4444',
 };
 
 const monthLabel = (month: string) =>
@@ -587,8 +616,8 @@ export const api = {
           .map(row => ({
             name: row.status_display,
             count: row.count,
-            percentage: total ? Math.round((row.count / total) * 100) : 0,
-            color: STATUS_COLORS[row.status] ?? '#94A3B8',
+            percentage: total ? Math.round((row.count / total) * 1000) / 10 : 0,
+            color: STATUS_COLORS[row.status] ?? STATUS_COLORS[row.status_display] ?? '#64748B',
           })),
       },
       recentInvoices: invoices.results,

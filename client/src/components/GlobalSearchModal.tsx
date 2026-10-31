@@ -183,7 +183,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
-                          <span className="text-sm font-semibold text-slate-900">${inv.total.toFixed(2)}</span>
+                          <span className="text-sm font-semibold text-slate-900">₹{inv.total.toFixed(2)}</span>
                           <StatusBadge status={inv.status} size="sm" />
                           <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-primary transition-colors" />
                         </div>
@@ -215,7 +215,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
                             {sub.number} • {sub.customerName}
                           </p>
                           <p className="text-xs text-slate-400">
-                            ${sub.amount}/{sub.billingCycle} • Next billing {sub.nextRenewal}
+                            ₹{sub.amount}/{sub.billingCycle} • Next billing {sub.nextRenewal}
                           </p>
                         </div>
                         <div className="flex items-center gap-2">

@@ -123,10 +123,10 @@ export const QuotationsPage: React.FC = () => {
                       <StatusBadge status={quote.status} size="sm" />
                     </td>
                     <td className="py-3.5 px-6 font-mono text-slate-600">
-                      ${quote.subtotal.toFixed(2)}
+                      ₹{quote.subtotal.toFixed(2)}
                     </td>
                     <td className="py-3.5 px-6 font-mono font-bold text-slate-900">
-                      ${quote.total.toFixed(2)}
+                      ₹{quote.total.toFixed(2)}
                     </td>
                     <td className="py-3.5 px-6 text-xs text-slate-500">
                       {quote.validUntil}
