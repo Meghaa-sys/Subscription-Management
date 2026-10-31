@@ -221,85 +221,55 @@ export const Sidebar: React.FC<SidebarProps> = ({
           })}
         </div>
 
-        {/* Creative Interactive Side Panel Widget: Click to Brighten with Theme! */}
+        {/* Creative Interactive Side Panel Widget: Hover to Brighten with Theme! */}
         <div className="p-3 border-t border-slate-100 bg-slate-50/50">
           {!collapsed ? (
             <div
-              onClick={() => setIsWidgetBrightened(!isWidgetBrightened)}
-              className={`rounded-2xl p-3.5 border cursor-pointer select-none transition-all duration-300 card-theme-brighten ${
-                isWidgetBrightened
-                  ? 'is-brightened ring-2 ring-primary bg-gradient-to-b from-white via-lavender-50 to-lavender-100/50'
-                  : 'bg-white border-slate-200/80 shadow-xs hover:border-primary/40'
-              }`}
+              className="group rounded-2xl p-3.5 border cursor-pointer select-none transition-all duration-300 card-theme-brighten bg-white border-slate-200/80 shadow-xs"
             >
               {/* Header */}
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-semibold text-slate-800 flex items-center gap-1.5">
-                  <span
-                    className={`w-2 h-2 rounded-full transition-colors ${
-                      isWidgetBrightened ? 'bg-primary animate-ping' : 'bg-emerald-500'
-                    }`}
-                  />
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 group-hover:bg-primary group-hover:animate-ping transition-colors" />
                   MRR Target Goal
                 </span>
-                <span
-                  className={`text-[10px] font-semibold px-2 py-0.5 rounded-full transition-colors ${
-                    isWidgetBrightened
-                      ? 'bg-primary text-white shadow-xs'
-                      : 'bg-lavender-100 text-primary'
-                  }`}
-                >
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full transition-all duration-200 bg-lavender-100 text-primary group-hover:bg-primary group-hover:text-white group-hover:shadow-xs">
                   78% Achieved
                 </span>
               </div>
 
               {/* Progress bar */}
               <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden mb-2">
-                <div
-                  className={`h-full rounded-full transition-all duration-500 ${
-                    isWidgetBrightened
-                      ? 'bg-gradient-to-r from-primary to-lavender-300 w-[78%] shadow-xs'
-                      : 'bg-primary w-[78%]'
-                  }`}
-                />
+                <div className="h-full rounded-full transition-all duration-500 bg-primary group-hover:bg-gradient-to-r group-hover:from-primary group-hover:to-lavender-300 w-[78%]" />
               </div>
 
               {/* Figures */}
-              <div className="flex items-baseline justify-between text-xs mb-3">
-                <span className="font-bold text-slate-900 font-mono">$19,450</span>
+              <div className="flex items-baseline justify-between text-xs mb-2">
+                <span className="font-bold text-slate-900 font-mono group-hover:text-primary transition-colors">$19,450</span>
                 <span className="text-slate-400 font-medium">Goal: $25k</span>
               </div>
 
-              {/* Expanded details when brightened / clicked */}
-              {isWidgetBrightened && (
-                <div className="pt-2 border-t border-primary/20 mb-3 space-y-1.5 text-[11px] text-slate-600 animate-in fade-in slide-in-from-top-1">
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">Monthly Run Rate:</span>
-                    <span className="font-semibold text-primary font-mono">+$1,650</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">Pace:</span>
-                    <span className="font-semibold text-emerald-600">4 days ahead</span>
-                  </div>
-                  <p className="text-[10px] text-slate-400 italic">
-                    Click anywhere on card to toggle glow state.
-                  </p>
+              {/* Expanded Velocity Details on Hover */}
+              <div className="max-h-0 group-hover:max-h-24 overflow-hidden transition-all duration-300 opacity-0 group-hover:opacity-100 pt-0 group-hover:pt-2 border-t border-transparent group-hover:border-primary/20 mb-0 group-hover:mb-2.5 space-y-1 text-[11px] text-slate-600">
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Monthly Run Rate:</span>
+                  <span className="font-semibold text-primary font-mono">+$1,650</span>
                 </div>
-              )}
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Pace:</span>
+                  <span className="font-semibold text-emerald-600">4 days ahead</span>
+                </div>
+              </div>
 
               {/* Run Cycle Button */}
               <button
                 onClick={handleRunCycle}
                 disabled={runningCycle}
-                className={`w-full flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-xl text-xs font-semibold btn-interaction transition-all ${
-                  isWidgetBrightened
-                    ? 'bg-primary text-white shadow-md shadow-primary/30 hover:bg-primary-hover'
-                    : 'bg-slate-900 text-white hover:bg-primary'
-                } disabled:opacity-50`}
+                className="w-full flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-xl text-xs font-semibold btn-interaction transition-all bg-slate-900 text-white group-hover:bg-primary group-hover:shadow-md group-hover:shadow-primary/30 disabled:opacity-50"
               >
                 <Zap
                   className={`w-3.5 h-3.5 ${
-                    runningCycle ? 'animate-spin' : isWidgetBrightened ? 'text-amber-300' : 'text-slate-300'
+                    runningCycle ? 'animate-spin' : 'text-slate-300 group-hover:text-amber-300'
                   }`}
                 />
                 {runningCycle ? 'Running Automation...' : 'Trigger Billing Run'}

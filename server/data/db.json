@@ -771,6 +771,42 @@
   ],
   "auditLogs": [
     {
+      "id": "log_1793425425382_b8lz",
+      "action": "SCHEDULED_CYCLE_RAN",
+      "entityType": "billing_engine",
+      "entityId": "engine",
+      "actor": "Megha (Admin)",
+      "details": "Billing cycle executed: 0 renewals invoiced, 0 marked overdue.",
+      "timestamp": "2026-10-31T05:43:45.382Z"
+    },
+    {
+      "id": "log_1793425404273_gnp9",
+      "action": "SCHEDULED_CYCLE_RAN",
+      "entityType": "billing_engine",
+      "entityId": "engine",
+      "actor": "Megha (Admin)",
+      "details": "Billing cycle executed: 0 renewals invoiced, 0 marked overdue.",
+      "timestamp": "2026-10-31T05:43:24.273Z"
+    },
+    {
+      "id": "log_1793425401610_5t17",
+      "action": "SCHEDULED_CYCLE_RAN",
+      "entityType": "billing_engine",
+      "entityId": "engine",
+      "actor": "Megha (Admin)",
+      "details": "Billing cycle executed: 0 renewals invoiced, 0 marked overdue.",
+      "timestamp": "2026-10-31T05:43:21.610Z"
+    },
+    {
+      "id": "log_1793425399026_qujt",
+      "action": "SCHEDULED_CYCLE_RAN",
+      "entityType": "billing_engine",
+      "entityId": "engine",
+      "actor": "Megha (Admin)",
+      "details": "Billing cycle executed: 0 renewals invoiced, 0 marked overdue.",
+      "timestamp": "2026-10-31T05:43:19.026Z"
+    },
+    {
       "id": "log_1793424156902_3anl",
       "action": "QUOTATION_CONVERTED",
       "entityType": "quotation",

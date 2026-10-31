@@ -54,20 +54,18 @@ body {
   box-shadow: 0 12px 28px -6px rgba(81, 69, 229, 0.1), 0 6px 14px -4px rgba(0, 0, 0, 0.04);
 }
 
-/* Click-to-Brighten Theme Card Effect */
+/* Hover-to-Brighten Theme Card Effect */
 .card-theme-brighten {
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease, background 0.25s ease;
   position: relative;
+  overflow: hidden;
 }
-.card-theme-brighten:hover {
-  border-color: rgba(81, 69, 229, 0.35);
-  box-shadow: 0 10px 25px -4px rgba(81, 69, 229, 0.09), 0 4px 10px -2px rgba(0, 0, 0, 0.03);
-}
+.card-theme-brighten:hover,
 .card-theme-brighten.is-brightened {
   border-color: #5145E5 !important;
-  background: linear-gradient(180deg, #FFFFFF 0%, #FAF8FF 60%, #F3F0FF 100%) !important;
-  box-shadow: 0 0 0 2px #5145E5, 0 14px 38px -6px rgba(81, 69, 229, 0.25), 0 4px 12px -2px rgba(81, 69, 229, 0.12) !important;
-  transform: translateY(-2px);
+  background: linear-gradient(180deg, #FFFFFF 0%, #FAF9FF 50%, #F1EEFF 100%) !important;
+  box-shadow: 0 0 0 2px rgba(81, 69, 229, 0.85), 0 16px 40px -6px rgba(81, 69, 229, 0.28), 0 4px 14px -2px rgba(81, 69, 229, 0.12) !important;
+  transform: translateY(-4px);
 }
 
 /* Side panel glowing pulse */
