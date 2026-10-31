@@ -1,9 +1,10 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, ChevronRight, Printer } from 'lucide-react';
+import { ArrowLeft, ChevronRight, CreditCard, Printer } from 'lucide-react';
 import { api } from '../api/client';
 import { StatusBadge } from '../components/StatusBadge';
 import { Card, formatDate, formatINR, Message, PageHeader, usePortalData } from './shared';
+import { FakePaymentModal } from './FakePaymentModal';
 
 export const PortalInvoices: React.FC = () => {
   const { data, loading } = usePortalData(api.getPortalInvoices, 'Failed to load invoices');
@@ -60,12 +61,13 @@ const TotalRow: React.FC<{ label: string; value: string; strong?: boolean }> = (
 export const PortalInvoiceDetail: React.FC = () => {
   const { id = '' } = useParams();
   const load = useCallback(() => api.getPortalInvoice(id), [id]);
-  const { data: invoice, loading } = usePortalData(load, 'Failed to load invoice');
+  const { data: invoice, loading, reload } = usePortalData(load, 'Failed to load invoice');
+  const [payModalOpen, setPayModalOpen] = useState(false);
 
   const back = (
     <Link
       to="/portal/invoices"
-      className="inline-flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-slate-900 print:hidden"
+      className="inline-flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-emerald-700 transition-colors print:hidden"
     >
       <ArrowLeft className="w-3.5 h-3.5" /> All invoices
     </Link>
@@ -81,6 +83,8 @@ export const PortalInvoiceDetail: React.FC = () => {
     );
   }
 
+  const canPay = invoice.balance > 0 && invoice.status !== 'void';
+
   return (
     <>
       {back}
@@ -89,10 +93,18 @@ export const PortalInvoiceDetail: React.FC = () => {
         subtitle={`Billing period ${formatDate(invoice.periodStart)} to ${formatDate(invoice.periodEnd)}`}
         action={
           <div className="flex items-center gap-2">
+            {canPay && (
+              <button
+                onClick={() => setPayModalOpen(true)}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-sm shadow-emerald-600/25 active:scale-95 cursor-pointer print:hidden"
+              >
+                <CreditCard className="w-3.5 h-3.5" /> Pay Now
+              </button>
+            )}
             <StatusBadge status={invoice.status} />
             <button
               onClick={() => window.print()}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 text-xs font-semibold text-slate-700 hover:bg-slate-200 transition-colors print:hidden"
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 transition-colors print:hidden"
             >
               <Printer className="w-3.5 h-3.5" /> Print
             </button>
@@ -104,7 +116,7 @@ export const PortalInvoiceDetail: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
           <div>
             <p className="text-xs text-slate-400">Billed to</p>
-            <p className="font-medium text-slate-900 mt-0.5">{invoice.customerName}</p>
+            <p className="font-bold text-slate-900 mt-0.5">{invoice.customerName}</p>
             {invoice.customerCompany && <p className="text-slate-600">{invoice.customerCompany}</p>}
             {invoice.customerAddress && <p className="text-slate-600 whitespace-pre-line">{invoice.customerAddress}</p>}
           </div>
@@ -148,6 +160,15 @@ export const PortalInvoiceDetail: React.FC = () => {
           <TotalRow label="Total" value={formatINR(invoice.total)} strong />
           <TotalRow label="Paid" value={formatINR(invoice.total - invoice.balance)} />
           <TotalRow label="Balance due" value={formatINR(invoice.balance)} strong />
+
+          {canPay && (
+            <button
+              onClick={() => setPayModalOpen(true)}
+              className="w-full mt-3 py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-bold text-xs shadow-md shadow-emerald-600/25 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <CreditCard className="w-4 h-4" /> Pay {formatINR(invoice.balance)}
+            </button>
+          )}
         </div>
       </Card>
 
@@ -166,6 +187,23 @@ export const PortalInvoiceDetail: React.FC = () => {
           </ul>
         </Card>
       )}
+
+      <FakePaymentModal
+        item={
+          canPay
+            ? {
+                id: invoice.id,
+                invoiceId: invoice.id,
+                name: `Invoice ${invoice.invoiceNumber}`,
+                amount: invoice.balance,
+                type: 'invoice',
+              }
+            : null
+        }
+        isOpen={payModalOpen}
+        onClose={() => setPayModalOpen(false)}
+        onSuccess={() => reload()}
+      />
     </>
   );
 };

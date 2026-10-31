@@ -79,7 +79,7 @@ export const PortalSubscriptionDetail: React.FC = () => {
   };
 
   const back = (
-    <Link to="/portal/subscriptions" className="inline-flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-slate-900">
+    <Link to="/portal/subscriptions" className="inline-flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-emerald-700 transition-colors">
       <ArrowLeft className="w-3.5 h-3.5" /> All subscriptions
     </Link>
   );
@@ -141,7 +141,7 @@ export const PortalSubscriptionDetail: React.FC = () => {
             <button
               disabled={working}
               onClick={() => act(() => api.renewSubscription(sub.id), 'Subscription renewed', 'Your expiry date moved by one billing period.')}
-              className={`${buttonClass} bg-lavender-100 text-primary hover:bg-lavender-200`}
+              className={`${buttonClass} bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border border-emerald-200/60`}
             >
               <RefreshCw className="w-3.5 h-3.5" /> Renew
             </button>
@@ -149,7 +149,7 @@ export const PortalSubscriptionDetail: React.FC = () => {
           {(sub.status === 'active' || sub.status === 'paused') && (
             <Link
               to={`/portal/discounts?subscription=${sub.id}`}
-              className={`${buttonClass} bg-slate-100 text-slate-700 hover:bg-slate-200`}
+              className={`${buttonClass} bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200/50`}
             >
               <Percent className="w-3.5 h-3.5" /> Request a discount
             </Link>

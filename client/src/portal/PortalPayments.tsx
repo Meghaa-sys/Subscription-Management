@@ -22,7 +22,7 @@ export const PortalPayments: React.FC = () => {
                   <span className="block text-sm font-semibold text-slate-900">{row.paymentReference}</span>
                   <span className="block text-xs text-slate-400 mt-0.5">
                     {formatDate(row.paymentDate)} · {row.paymentMethod} ·{' '}
-                    <Link to={`/portal/invoices/${row.invoiceId}`} className="text-primary hover:underline">
+                    <Link to={`/portal/invoices/${row.invoiceId}`} className="text-emerald-600 hover:text-emerald-700 hover:underline">
                       {row.invoiceNumber}
                     </Link>
                   </span>

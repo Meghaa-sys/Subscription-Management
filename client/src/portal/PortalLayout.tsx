@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { CreditCard, FileText, LayoutDashboard, LogOut, Package, Percent, Repeat, UserRound } from 'lucide-react';
+import { LayoutGroup, motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 
 const NAV_ITEMS = [
@@ -13,53 +14,105 @@ const NAV_ITEMS = [
   { to: '/portal/profile', label: 'Profile', icon: UserRound },
 ];
 
+const getIconHoverAnimation = (label: string) => {
+  switch (label) {
+    case 'Dashboard':
+      return { scale: 1.22, rotate: 10 };
+    case 'Subscriptions':
+      return { scale: 1.22, rotate: 180 };
+    case 'Invoices':
+      return { scale: 1.22, y: -2.5 };
+    case 'Payments':
+      return { scale: 1.22, rotate: -12 };
+    case 'Plans':
+      return { scale: 1.22, rotate: -8 };
+    case 'Discounts':
+      return { scale: 1.22, rotate: 45 };
+    case 'Profile':
+      return { scale: 1.22, y: -2.5 };
+    default:
+      return { scale: 1.2 };
+  }
+};
+
 export const PortalLayout: React.FC = () => {
   const { user, logout } = useAuth();
 
   return (
-    <div className="min-h-screen bg-background text-text-main font-sans antialiased">
-      <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-200/80 print:hidden">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="h-14 flex items-center justify-between gap-4">
-            <NavLink to="/portal" className="flex items-center gap-2.5 min-w-0">
-              <span className="w-8 h-8 rounded-xl bg-primary flex items-center justify-center shrink-0 text-white font-bold text-sm">
+    <div className="min-h-screen bg-[#F6FAF7] text-text-main font-sans antialiased selection:bg-emerald-200 selection:text-emerald-900">
+      <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-emerald-950/10 shadow-xs print:hidden">
+        <div className="w-full px-4 sm:px-6 lg:px-8">
+          <div className="h-20 flex items-center justify-between gap-4">
+            {/* Brand Logo & Name (No subtitle badge) */}
+            <NavLink to="/portal" className="flex items-center gap-3.5 min-w-0 group">
+              <motion.span
+                whileHover={{ rotate: -8, scale: 1.08 }}
+                whileTap={{ scale: 0.95 }}
+                className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center shrink-0 text-white font-extrabold text-xl shadow-md shadow-emerald-600/30 transition-transform"
+              >
                 B
-              </span>
-              <span className="min-w-0">
-                <span className="block font-semibold text-slate-900 text-sm leading-tight">Brightloop</span>
-                <span className="block text-[10px] text-slate-400 font-medium">Customer portal</span>
+              </motion.span>
+              <span className="block font-bold text-slate-900 text-lg sm:text-xl tracking-tight group-hover:text-emerald-700 transition-colors">
+                Brightloop
               </span>
             </NavLink>
 
-            <div className="flex items-center gap-3 min-w-0">
-              <span className="hidden sm:block text-xs font-medium text-slate-600 truncate">{user?.name}</span>
+            {/* Signout Button pushed to the very right */}
+            <div className="flex items-center ml-auto">
               <button
                 onClick={logout}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-rose-600 hover:bg-rose-50 transition-colors shrink-0"
+                className="group inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-rose-600 hover:text-rose-700 hover:bg-rose-50 border border-transparent hover:border-rose-200/80 active:scale-95 transition-all shrink-0 cursor-pointer"
               >
-                <LogOut className="w-3.5 h-3.5" />
+                <LogOut className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                 Sign out
               </button>
             </div>
           </div>
 
-          <nav className="flex gap-1 overflow-x-auto pb-2 -mx-1 px-1">
-            {NAV_ITEMS.map(({ to, label, icon: Icon, end }) => (
-              <NavLink
-                key={to}
-                to={to}
-                end={end}
-                className={({ isActive }) =>
-                  `inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
-                    isActive ? 'bg-lavender-100 text-primary font-semibold' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-                  }`
-                }
-              >
-                <Icon className="w-3.5 h-3.5" />
-                {label}
-              </NavLink>
-            ))}
-          </nav>
+          {/* Smooth Toggle Navigation with Icon Micro-interactions */}
+          <LayoutGroup id="portal-nav">
+            <nav className="flex gap-2 overflow-x-auto pb-3.5 pt-1 -mx-1 px-1">
+              {NAV_ITEMS.map(({ to, label, icon: Icon, end }) => (
+                <NavLink
+                  key={to}
+                  to={to}
+                  end={end}
+                  className="relative group inline-flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-sm whitespace-nowrap transition-colors select-none"
+                >
+                  {({ isActive }) => (
+                    <>
+                      {isActive && (
+                        <motion.span
+                          layoutId="portalActiveTab"
+                          className="absolute inset-0 bg-emerald-100/90 rounded-xl border border-emerald-300/80 shadow-xs z-0"
+                          transition={{ type: 'spring', stiffness: 450, damping: 32 }}
+                        />
+                      )}
+                      <motion.span
+                        className="relative z-10 flex items-center justify-center"
+                        whileHover={getIconHoverAnimation(label)}
+                        whileTap={{ scale: 0.88 }}
+                        transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+                      >
+                        <Icon
+                          className={`w-5 h-5 transition-colors ${
+                            isActive ? 'text-emerald-900' : 'text-slate-500 group-hover:text-emerald-700'
+                          }`}
+                        />
+                      </motion.span>
+                      <span
+                        className={`relative z-10 transition-colors ${
+                          isActive ? 'text-emerald-950 font-bold' : 'text-slate-600 group-hover:text-slate-900 font-semibold'
+                        }`}
+                      >
+                        {label}
+                      </span>
+                    </>
+                  )}
+                </NavLink>
+              ))}
+            </nav>
+          </LayoutGroup>
         </div>
       </header>
 

@@ -18,7 +18,13 @@ const Stat: React.FC<{ label: string; value: string; hint: string; icon: React.E
   <Card className="p-5">
     <div className="flex items-center justify-between">
       <span className="text-xs font-medium text-slate-500">{label}</span>
-      <Icon className={`w-4 h-4 ${alert ? 'text-rose-500' : 'text-primary'}`} />
+      <div
+        className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
+          alert ? 'bg-rose-50 text-rose-600' : 'bg-emerald-50 text-emerald-600'
+        }`}
+      >
+        <Icon className="w-4 h-4" />
+      </div>
     </div>
     <p className={`mt-2 text-2xl font-semibold tracking-tight ${alert ? 'text-rose-600' : 'text-slate-900'}`}>{value}</p>
     <p className="mt-1 text-xs text-slate-400">{hint}</p>
@@ -93,7 +99,7 @@ export const PortalDashboard: React.FC = () => {
         <Card>
           <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
             <h2 className="text-sm font-semibold text-slate-900">Your subscriptions</h2>
-            <Link to="/portal/subscriptions" className="text-xs font-semibold text-primary hover:underline">
+            <Link to="/portal/subscriptions" className="text-xs font-semibold text-emerald-600 hover:text-emerald-700 hover:underline">
               View all
             </Link>
           </div>
@@ -127,7 +133,7 @@ export const PortalDashboard: React.FC = () => {
         <Card>
           <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
             <h2 className="text-sm font-semibold text-slate-900">Recent invoices</h2>
-            <Link to="/portal/invoices" className="text-xs font-semibold text-primary hover:underline">
+            <Link to="/portal/invoices" className="text-xs font-semibold text-emerald-600 hover:text-emerald-700 hover:underline">
               View all
             </Link>
           </div>
@@ -160,7 +166,7 @@ export const PortalDashboard: React.FC = () => {
       {openRequests.length > 0 && (
         <p className="text-xs text-slate-500">
           You have {openRequests.length} discount {openRequests.length === 1 ? 'request' : 'requests'} in review.{' '}
-          <Link to="/portal/discounts" className="font-semibold text-primary hover:underline">
+          <Link to="/portal/discounts" className="font-semibold text-emerald-600 hover:text-emerald-700 hover:underline">
             See status
           </Link>
         </p>
