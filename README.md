@@ -48,11 +48,11 @@ The database comes pre-populated with realistic business data via `python manage
 ### 🔐 Demo Accounts Table
 
 | Role | Email | Password | Scope & Accessible Features |
-| :--- | :--- | :--- | :--- |
 | **Administrator** | `admin@brightloop.test` | `Admin@12345!` | **Full Admin Console**: Products, variants, plans, taxes, discounts, staff accounts, system settings, billing runner, and revenue analytics. |
 | **Staff Member 1** | `staff1@brightloop.test` | `Staff@12345!` | **Operations Console**: Customer directories, quotation generation, subscription lifecycle management, invoice creation/sending, and payment recording. |
 | **Staff Member 2** | `staff2@brightloop.test` | `Staff@12345!` | **Operations Console**: Customer directories, quotation generation, subscription lifecycle management, invoice creation/sending, and payment recording. |
-| **Customer 1** | `customer1@brightloop.test` | `Customer@12345!` | **Customer Portal (`/portal`)**: View personal subscriptions, track upcoming renewals, inspect & download invoices, review payments, and submit discount requests. |
+| **Customer 1** | `customer1@brightloop.test` *(Aarav Traders)* | `Customer@12345!` | **Customer Portal (`/portal`)**: View personal subscriptions, track upcoming renewals, inspect & download invoices, review payments, and submit discount requests. |
+| **Customer 4** | `customer4@brightloop.test` *(Deccan Textiles)* | `Customer@12345!` | **Customer Portal (`/portal`)**: 3 subscriptions (active/paused), 8 invoices, balance history. |
 | **Customers 2–12** | `customer2@brightloop.test`<br>...up to...<br>`customer12@brightloop.test` | `Customer@12345!` | **Customer Portal (`/portal`)**: Linked to seeded demo companies (e.g. *Blue Lotus Foods*, *Cedar Logistics*, *Deccan Textiles*). |
 | **Customers 13–20** | *(No login account)* | *(N/A)* | Manual customer profiles created by staff without self-service logins. |
 
@@ -253,3 +253,4 @@ Interactive API documentation is generated automatically via OpenAPI 3.0 / Swagg
 - **Swagger UI**: [http://127.0.0.1:8000/api/docs/](http://127.0.0.1:8000/api/docs/)
 - **OpenAPI Schema**: [http://127.0.0.1:8000/api/schema/](http://127.0.0.1:8000/api/schema/)
 - **Django Admin**: [http://127.0.0.1:8000/admin/](http://127.0.0.1:8000/admin/)
+
