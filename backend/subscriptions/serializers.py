@@ -1,9 +1,9 @@
 """Serializers for subscriptions and quotation templates."""
-from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from accounts.models import Customer
-from catalog.models import PaymentTerm, RecurringPlan
+from catalog.models import PaymentTerm
+from discounts.models import SubscriptionDiscount
 
 from .models import (
     QuotationTemplate,
@@ -76,6 +76,33 @@ class SubscriptionHistorySerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
+class AttachedDiscountSerializer(serializers.ModelSerializer):
+    """A discount attached to a subscription."""
+
+    name = serializers.CharField(source="discount.name", read_only=True)
+    discount_type = serializers.CharField(source="discount.discount_type", read_only=True)
+    value = serializers.DecimalField(
+        source="discount.value", max_digits=12, decimal_places=2, read_only=True
+    )
+    end_date = serializers.DateField(source="discount.end_date", read_only=True)
+    added_by_name = serializers.CharField(source="added_by.name", read_only=True)
+
+    class Meta:
+        model = SubscriptionDiscount
+        fields = [
+            "id",
+            "discount",
+            "name",
+            "discount_type",
+            "value",
+            "end_date",
+            "added_by",
+            "added_by_name",
+            "added_at",
+        ]
+        read_only_fields = fields
+
+
 class SubscriptionListSerializer(serializers.ModelSerializer):
     """Row shown in subscription tables."""
 
@@ -124,6 +151,7 @@ class SubscriptionDetailSerializer(SubscriptionListSerializer):
     template_name = serializers.CharField(source="template.name", read_only=True, default=None)
     lines = SubscriptionLineSerializer(many=True, read_only=True)
     history = SubscriptionHistorySerializer(many=True, read_only=True)
+    discounts = AttachedDiscountSerializer(source="subscription_discounts", many=True, read_only=True)
     allowed_transitions = serializers.SerializerMethodField()
     plan_pausable = serializers.BooleanField(source="plan.pausable", read_only=True)
     plan_closable = serializers.BooleanField(source="plan.closable", read_only=True)
@@ -139,6 +167,7 @@ class SubscriptionDetailSerializer(SubscriptionListSerializer):
             "plan_renewable",
             "allowed_transitions",
             "lines",
+            "discounts",
             "history",
         ]
         read_only_fields = fields

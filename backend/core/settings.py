@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     "subscriptions",
     "billing",
     "discounts",
+    "reports",
 ]
 
 MIDDLEWARE = [
@@ -99,7 +100,14 @@ if not os.environ.get("DATABASE_URL"):
 
 # conn_health_checks: Neon suspends idle computes, which silently kills pooled
 # connections; the check replaces a dead connection instead of failing a request.
-DATABASES = {"default": dj_database_url.config(conn_max_age=600, conn_health_checks=True)}
+# ssl_require only on PostgreSQL: SQLite, used for tests, rejects the sslmode option.
+DATABASES = {
+    "default": dj_database_url.config(
+        conn_max_age=600,
+        conn_health_checks=True,
+        ssl_require=os.environ["DATABASE_URL"].startswith(("postgres://", "postgresql://")),
+    )
+}
 
 # Test runs create and destroy a database, so they must never reach Neon.
 if RUNNING_TESTS and DATABASES["default"]["ENGINE"] != "django.db.backends.sqlite3":
@@ -188,6 +196,12 @@ SPECTACULAR_SETTINGS = {
     ),
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
+    "ENUM_NAME_OVERRIDES": {
+        "AmountTypeEnum": "common.enums.AmountType",
+        "SubscriptionStatusEnum": "common.enums.SubscriptionStatus",
+        "InvoiceStatusEnum": "common.enums.InvoiceStatus",
+        "DiscountRequestStatusEnum": "common.enums.DiscountRequestStatus",
+    },
     "SCHEMA_PATH_PREFIX": r"/api",
     "COMPONENT_SPLIT_REQUEST": True,
     "SWAGGER_UI_SETTINGS": {"persistAuthorization": True, "displayRequestDuration": True},
